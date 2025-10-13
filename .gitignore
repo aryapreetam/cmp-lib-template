@@ -15,3 +15,5 @@ Pods/
 *.jks
 *.gpg
 *yarn.lock
+/.github/copilot-instructions.md
+/doc-to-ignore/

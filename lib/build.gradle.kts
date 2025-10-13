@@ -8,6 +8,7 @@ plugins {
   alias(libs.plugins.maven.publish)
   alias(libs.plugins.compose)
   alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.dokka)
 }
 
 kotlin {
@@ -45,7 +46,7 @@ kotlin {
 }
 
 android {
-  namespace = "fiblib"
+  namespace = "io.github.aryapreetam.fiblib"
   compileSdk = 35
 
   defaultConfig {
@@ -53,16 +54,20 @@ android {
   }
 }
 
+dependencies {
+  dokkaPlugin(libs.android.documentation.plugin)
+}
+
 //Publishing your Kotlin Multiplatform library to Maven Central
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
   publishToMavenCentral()
-  coordinates("io.github.aryapreetam", "fiblib", "1.0.0")
+  coordinates("io.github.aryapreetam", "fiblib", "0.0.3")
 
   pom {
-    name = "cmp lib template"
-    description = "Kotlin Multiplatform library"
-    url = "github url" //todo
+    name = "Fibonacci Library"
+    description = "Compose Multiplatform library for fibonacci numbers"
+    url = "https://aryapreetam.github.io/cmp-lib-template" //todo
 
     licenses {
       license {
@@ -73,15 +78,17 @@ mavenPublishing {
 
     developers {
       developer {
-        id = "" //todo
-        name = "" //todo
-        email = "" //todo
+        id = "aryapreetam" //todo
+        name = "Preetam Bhosle" //todo
       }
     }
 
     scm {
-      url = "github url" //todo
+      url = "https://github.com/aryapreetam/cmp-lib-template" //todo
     }
   }
-  if (project.hasProperty("signing.keyId")) signAllPublications()
+  // Sign publications if either local keyId or CI signingInMemoryKey is available
+  if (project.hasProperty("signing.keyId") || project.hasProperty("signingInMemoryKey")) {
+    signAllPublications()
+  }
 }
