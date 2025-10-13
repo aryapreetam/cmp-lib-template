@@ -17,6 +17,13 @@
   </a>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white" alt="Android">
+  <img src="https://img.shields.io/badge/iOS-000000?logo=apple&logoColor=white" alt="iOS">
+  <img src="https://img.shields.io/badge/Desktop/JVM-0078D6?logo=desktop&logoColor=white" alt="Desktop">
+  <img src="https://img.shields.io/badge/Web(wasm)-4285F4?logo=google-chrome&logoColor=white" alt="Web">
+</p>
+
 <!-- New: Brief template description -->
 This repository is a ready-to-ship template for building and releasing Compose Multiplatform libraries. It automates the heavy lifting so you can focus on your API and UX:
 
@@ -42,7 +49,10 @@ API Docs:
 1. Click "Use this template" to create your repo
 2. Follow the [setup guide](docs/using-this-template.md) to customize for your library
 3. Configure [GitHub secrets](docs/github-secrets-setup.md) for publishing
-4. Start coding your library!
+4. **Enable GitHub Pages:** Go to repository Settings → Pages → Source: Select "GitHub Actions"
+5. Start coding your library!
+
+> **Note:** You don't need a pre-existing `<username>.github.io` site. GitHub Pages will automatically create `https://<username>.github.io/<your-library-name>/` when you run your first release.
 
 **For contributors:** See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
@@ -112,32 +122,51 @@ println(first10)
 
 ---
 
-**⬇️ Download the latest sample app executables for your platform:**
+## 📦 Download Sample App Executables
 
-[![Download for Mac (Intel)](https://img.shields.io/badge/Download--Mac--x64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-x64.dmg)
-[![Download for Mac (Apple Silicon)](https://img.shields.io/badge/Download--Mac--arm64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-arm64.dmg)
-[![Download for Windows](https://img.shields.io/badge/Download--Windows--MSI-0078D4?style=for-the-badge&logo=windows)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-windows.msi)
-[![Download Android APK](https://img.shields.io/badge/Download--Android--APK-green?style=for-the-badge&logo=android)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-android-unsigned.apk)
-[![Download Web (WASM bundle)](https://img.shields.io/badge/Download--Web--Wasm--zip-purple?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-wasm.zip)
-[![Download iOS Simulator App](https://img.shields.io/badge/Download--iOS--Simulator--zip-orange?style=for-the-badge&logo=apple)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-ios-simulator.zip)
+Download and try the sample app on your platform without building from source:
 
-### Testing on iOS Simulator
+| Platform | Download Link |
+|----------|--------------|
+| 🍏 **macOS (Intel)** | [![Download](https://img.shields.io/badge/Download--Mac--x64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-x64.dmg) |
+| 🍎 **macOS (Apple Silicon)** | [![Download](https://img.shields.io/badge/Download--Mac--arm64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-arm64.dmg) |
+| 🪟 **Windows** | [![Download](https://img.shields.io/badge/Download--Windows--MSI-0078D4?style=for-the-badge&logo=windows)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-windows.msi) |
+| 🤖 **Android** | [![Download](https://img.shields.io/badge/Download--Android--APK-green?style=for-the-badge&logo=android)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-android-unsigned.apk) |
+| 🌐 **Web (Wasm)** | [![Download](https://img.shields.io/badge/Download--Web--Wasm--zip-purple?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-wasm.zip) |
+|  **iOS Simulator** | [![Download](https://img.shields.io/badge/Download--iOS--Simulator--zip-orange?style=for-the-badge&logo=apple)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-ios-simulator.zip) |
 
-- Download `sample-app-ios-simulator.zip` from
-  the [latest release](https://github.com/aryapreetam/cmp-lib-template/releases).
-- Unzip it to get `sample-app-ios-simulator.app`.
-- To install:
-    1. Open your iOS Simulator in Xcode
-    2. Drag the `.app` onto the Simulator window OR run:
-       ```sh
-       xcrun simctl install booted /path/to/sample-app-ios-simulator.app
-       ```
+### How to Run the Sample App
+
+#### 🤖 Android
+**Option 1: Drag and Drop**
+- Download the APK file
+- Open an Android emulator or connect a physical device
+- Drag the APK onto the emulator window
+
+**Option 2: ADB Install**
+```bash
+adb install sample-app-android-unsigned.apk
+```
+
+#### 🌐 Web (Wasm)
+- Download and unzip `sample-app-wasm.zip`
+- Open `index.html` in a web browser
+
+**Note:** You can also try the live demo without downloading: [Try Live Demo](https://aryapreetam.github.io/cmp-lib-template/demo/)
+
+#### 🍏 iOS Simulator
+- Download `sample-app-ios-simulator.zip` from the [latest release](https://github.com/aryapreetam/cmp-lib-template/releases)
+- Unzip to get `sample-app-ios-simulator.app`
+- Open your iOS Simulator in Xcode
+- Drag the `.app` onto the Simulator window OR run:
+  ```sh
+  xcrun simctl install booted /path/to/sample-app-ios-simulator.app
+  ```
 - The sample app will now appear and can be launched directly from the Simulator!
 
-**Running the Downloaded Desktop App (macOS: DMG)**
-
-- Download the DMG from GitHub Releases for your Mac architecture (Intel or Apple Silicon).
-- Open (mount) the DMG and drag the app to your Applications folder (or Desktop).
+#### 🍎 macOS
+- Download the DMG for your Mac architecture (Intel or Apple Silicon)
+- Open (mount) the DMG and drag the app to your Applications folder (or Desktop)
 - **When you try to open the app for the first time, you may see a Gatekeeper warning:**
 
   <p align="center">
@@ -151,35 +180,47 @@ println(first10)
      2. In the dialog, click "Open". (If there is a question mark in the corner, you can click it for more info.)
      3. The app will start. This is safe for open-source/test builds.
 
-> This is a normal security step for all open-source and CI-generated Mac executables. Apps are signed ad-hoc for
-> internal/dev use, not with a public Apple developer ID.
+> This is a normal security step for all open-source and CI-generated Mac executables. Apps are signed ad-hoc for internal/dev use, not with a public Apple developer ID.
 
-### Download Desktop App for Your Mac
+**Tip:** Unsure about your Mac's type? Click the Apple logo → "About This Mac". If it says Intel, download x64; if it says M1, M2, or M3, download arm64.
 
-On every release, two separate DMG files are built:
+#### 🪟 Windows
+- Download and run the MSI installer
+- Follow the installation wizard
+- Launch the app from the Start menu
 
-| Platform         | File Name                    | Download for…                                          |
-|------------------|------------------------------|--------------------------------------------------------|
-| 🍏 Intel Mac     | sample-app-desktop-x64.dmg   | Intel-based Macs (2019 or earlier, or with Intel CPUs) |
-| 🍎 Apple Silicon | sample-app-desktop-arm64.dmg | Newer Macs with M1/M2/M3 chips                         |
+---
 
-You can find both files in the Assets section of
-each [GitHub Release](https://github.com/aryapreetam/cmp-lib-template/releases).
+## 🚀 What This Template Provides
 
-_**Tip**: Unsure about your Mac's type? Click the Apple logo → "About This Mac". If it says Intel, download x64; if it
-says M1, M2, or M3, download arm64._
+This template automatically generates and deploys three key resources for your library:
+
+| Resource | Description | Preview |
+|----------|-------------|---------|
+| 📚 **Library Homepage** | Your README becomes a beautiful landing page with Docsify | <img src="readme_images/site-for-the-lib.png" alt="Library homepage" width="250" /> |
+| 📖 **API Documentation** | Automatically generated Dokka docs with improved UI (2.1.0-Beta) | <img src="readme_images/ste-for-api-doc.png" alt="API docs" width="250" /> |
+| 🌐 **Live Wasm Demo** | Interactive browser demo of your sample app | <img src="readme_images/wasm-demo.png" alt="Wasm demo" width="250" /> |
+
+All three are automatically deployed to GitHub Pages:
+- **Homepage:** `https://<username>.github.io/<library-name>/`
+- **API Docs:** `https://<username>.github.io/<library-name>/api/`
+- **Demo:** `https://<username>.github.io/<library-name>/demo/`
+
+---
+
+## 🛠️ Run Sample App from Source
 
 You can also run Gradle tasks in the terminal:
 
 * `./gradlew run` to run application
 * `./gradlew package` to store native distribution into `build/compose/binaries`
 
-### Run Sample App
+### Run Sample App by Platform
 
-- Desktop JVM: `./gradlew :sample:composeApp:run`
-- Android: `open project in Android Studio and run the sample app`
-- iOS: `open 'sample/iosApp/iosApp.xcodeproj' in Xcode and run the sample app`
-- Wasm: `./gradlew :sample:composeApp:wasmJsBrowserRun`
+- **Desktop JVM:** `./gradlew :sample:composeApp:run`
+- **Android:** Open project in Android Studio and run the sample app
+- **iOS:** Open `sample/iosApp/iosApp.xcodeproj` in Xcode and run the sample app
+- **Wasm:** `./gradlew :sample:composeApp:wasmJsBrowserRun`
 
 ---
 
@@ -249,6 +290,24 @@ But if you want to verify publishing from your local machine, you can follow bel
 ## License
 
 MIT License © 2025 aryapreetam and contributors. See [LICENSE](./LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+This template was built with inspiration and learnings from the excellent work of the Kotlin multiplatform community:
+
+- **Project Setup:** Initial project structure was created using [Kotlin Multiplatform Web Wizard](https://terrakok.github.io/kmp-web-wizard/) by [terrakok](https://github.com/terrakok)
+
+- **Inspirations:**
+  - [Reorderable](https://github.com/Calvin-LL/Reorderable) by Calvin-LL - For a library that seamlessly works across all platforms, and most importantly, providing demo app APK in releases to test before integrating
+  - [compose-multiplatform-library-template](https://github.com/KevinnZou/compose-multiplatform-library-template) by KevinnZou 
+  - [compose-multiplatform-library-template](https://github.com/meticha/compose-multiplatform-library-template) by meticha 
+
+Special thanks to:
+- **GitHub** for hosting this project and providing free compute resources for CI/CD through GitHub Actions
+- **JetBrains** for building the incredible Kotlin Multiplatform and Compose Multiplatform frameworks that enable us to build truly cross-platform applications with shared code
+- The entire **Kotlin Multiplatform and Compose Multiplatform communities** for making cross-platform development better every day!
 
 ---
 
