@@ -105,33 +105,6 @@ jobs:
           elif [ -n "$CHROME_PATH" ]; then
             echo "CHROME_BIN=$CHROME_PATH" >> $GITHUB_ENV
           fi
-      - name: Force Gradle to use Node 20 for wasm
-        if: matrix.target == 'wasm'
-        run: |
-          # Ensure Gradle Kotlin/Wasm plugin uses Node 20
-          NODE_PATH=$(which node)
-          
-          # Verify Node version
-          echo "Using Node.js version:"
-          node --version
-          
-          # Stop any existing Gradle daemons to ensure clean state
-          ./gradlew --stop || true
-          
-          # Add properties to project gradle.properties (takes precedence over user ~/.gradle/gradle.properties)
-          echo "kotlin.js.nodejs.executable=$NODE_PATH" >> gradle.properties
-          echo "nodejs.download=false" >> gradle.properties
-          
-          # Also set in ~/.gradle for fallback
-          mkdir -p ~/.gradle
-          echo "nodejs.download=false" >> ~/.gradle/gradle.properties
-          echo "kotlin.js.nodejs.executable=$NODE_PATH" >> ~/.gradle/gradle.properties
-          
-          # Set Gradle options to disable Node download
-          echo "GRADLE_OPTS=-Dorg.gradle.nodejs.download=false -Dkotlin.js.nodejs.executable=$NODE_PATH" >> $GITHUB_ENV
-          
-          echo "Configuration applied. Node path: $NODE_PATH"
-          cat gradle.properties | grep -E "kotlin.js.nodejs|nodejs.download"
       - name: Cache Kotlin/Native (~/.konan)
         if: matrix.target == 'ios'
         uses: actions/cache@v4
