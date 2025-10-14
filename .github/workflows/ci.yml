@@ -253,7 +253,7 @@ jobs:
           mkdir -p ${{ github.workspace }}/e2e-artifacts
           cd sample/iosApp/build/Build/Products/Debug-iphonesimulator
           
-          # Find the actual .app file (could be "Multiplatform App.app" or "iosApp.app")
+          # Find the actual .app file (could be "SampleApp.app" or "iosApp.app")
           APP_FILE=$(find . -maxdepth 1 -name "*.app" -type d | head -n1)
           
           if [ -z "$APP_FILE" ]; then
