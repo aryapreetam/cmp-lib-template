@@ -15,9 +15,9 @@ NC='\033[0m' # No Color
 # Configuration file
 CONFIG_FILE=".template-config.json"
 
-echo -e "${BLUE}╔═══════════════════════════════���════════════════════════════╗${NC}"
+echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   Compose Multiplatform Library Template Setup            ║${NC}"
-echo -e "${BLUE}╔═══════════════════════���════════════════════════════════════╗${NC}"
+echo -e "${BLUE}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
 # Check if already configured
@@ -35,7 +35,7 @@ if [ -f "$CONFIG_FILE" ]; then
   echo ""
 fi
 
-# Get current git remote URL to suggest defaults
+# Get current git remote URL to auto-detect repository name and org
 GIT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
 if [[ $GIT_REMOTE =~ github.com[:/]([^/]+)/([^/.]+) ]]; then
   DETECTED_ORG="${BASH_REMATCH[1]}"
@@ -45,26 +45,32 @@ else
   DETECTED_REPO=""
 fi
 
+# Validate that we have detected a repository
+if [ -z "$DETECTED_REPO" ]; then
+  echo -e "${RED}Error: Could not detect repository name from git remote!${NC}"
+  echo "Please make sure you've created this repository from the template and have a git remote configured."
+  exit 1
+fi
+
+# Use detected repository name (no user input)
+REPO_NAME="$DETECTED_REPO"
+
 # Prompt for configuration values
 echo -e "${GREEN}Please provide your library configuration:${NC}"
 echo ""
+echo -e "${BLUE}Repository detected:${NC} ${YELLOW}${REPO_NAME}${NC}"
+echo ""
 
-# Repository name
-if [ -n "$DETECTED_REPO" ]; then
-  read -p "Repository name [${DETECTED_REPO}]: " REPO_NAME
-  REPO_NAME=${REPO_NAME:-$DETECTED_REPO}
-else
-  read -p "Repository name (e.g., cmp-mediaviewer): " REPO_NAME
-  while [ -z "$REPO_NAME" ]; do
-    echo -e "${RED}Repository name cannot be empty!${NC}"
-    read -p "Repository name: " REPO_NAME
-  done
-fi
+# Library name (human-readable, for POM)
+read -p "Library name [e.g., Media Viewer Library]: " LIBRARY_NAME
+while [ -z "$LIBRARY_NAME" ]; do
+  echo -e "${RED}Library name cannot be empty!${NC}"
+  read -p "Library name: " LIBRARY_NAME
+done
 
-# Artifact name (default: repo name without cmp- prefix)
-DEFAULT_ARTIFACT="${REPO_NAME#cmp-}"
-read -p "Maven artifact name [${DEFAULT_ARTIFACT}]: " ARTIFACT_NAME
-ARTIFACT_NAME=${ARTIFACT_NAME:-$DEFAULT_ARTIFACT}
+# Artifact name (default: repo name)
+read -p "Maven artifact name [${REPO_NAME}]: " ARTIFACT_NAME
+ARTIFACT_NAME=${ARTIFACT_NAME:-$REPO_NAME}
 
 # GitHub org/username
 if [ -n "$DETECTED_ORG" ]; then
@@ -102,15 +108,15 @@ DEFAULT_VERSION="0.0.1"
 read -p "Initial version [${DEFAULT_VERSION}]: " VERSION
 VERSION=${VERSION:-$DEFAULT_VERSION}
 
-# Generate package name (convert hyphens to empty, lowercase)
-PACKAGE_NAME=$(echo "$ARTIFACT_NAME" | tr '-' '' | tr '[:upper:]' '[:lower:]')
+# Generate package name (remove hyphens and special chars, lowercase)
+PACKAGE_NAME=$(echo "$ARTIFACT_NAME" | tr -d '-' | tr '[:upper:]' '[:lower:]')
 PACKAGE_PATH=$(echo "$GROUP_ID" | tr '.' '/')/$PACKAGE_NAME
 
 echo ""
-echo -e "${BLUE}═══════════════════════���═══════════════════════════════════${NC}"
+echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}Configuration Summary:${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════���═══${NC}"
-echo "Repository name:      $REPO_NAME"
+echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo "Library name:         $LIBRARY_NAME"
 echo "Artifact name:        $ARTIFACT_NAME"
 echo "Version:              $VERSION"
 echo "GitHub org:           $GITHUB_ORG"
@@ -137,6 +143,7 @@ cat > "$CONFIG_FILE" << EOF
 {
   "configured": true,
   "repo_name": "$REPO_NAME",
+  "library_name": "$LIBRARY_NAME",
   "artifact_name": "$ARTIFACT_NAME",
   "github_org": "$GITHUB_ORG",
   "group_id": "$GROUP_ID",
@@ -170,7 +177,7 @@ rm -f settings.gradle.kts.bak
 echo -e "${GREEN}✓${NC} Updating lib/build.gradle.kts..."
 sed -i.bak "s|namespace = \"$OLD_NAMESPACE\"|namespace = \"$GROUP_ID.$PACKAGE_NAME\"|" lib/build.gradle.kts
 sed -i.bak "s|coordinates(\"$OLD_GROUP\", \"$OLD_ARTIFACT\", \"$OLD_VERSION\"|coordinates(\"$GROUP_ID\", \"$ARTIFACT_NAME\", \"$VERSION\"|" lib/build.gradle.kts
-sed -i.bak "s|name = \"$OLD_LIB_NAME\"|name = \"$ARTIFACT_NAME\"|" lib/build.gradle.kts
+sed -i.bak "s|name = \"$OLD_LIB_NAME\"|name = \"$LIBRARY_NAME\"|" lib/build.gradle.kts
 sed -i.bak "s|description = \"$OLD_DESCRIPTION\"|description = \"$LIBRARY_DESCRIPTION\"|" lib/build.gradle.kts
 sed -i.bak "s|url = \"https://$OLD_ORG.github.io/$OLD_REPO\"|url = \"https://$GITHUB_ORG.github.io/$REPO_NAME\"|" lib/build.gradle.kts
 sed -i.bak "s|id = \"$OLD_ORG\"|id = \"$GITHUB_ORG\"|" lib/build.gradle.kts
@@ -249,9 +256,9 @@ EOF
 echo -e "${GREEN}✓${NC} Created package structure with README"
 
 echo ""
-echo -e "${GREEN}╔═══════════════════════════════════════════════════════���════╗${NC}"
-echo -e "${GREEN}║                  ✅ Setup Complete!                        ║${NC}"
-echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}╔═══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║                  ✅ Setup Complete!                       ║${NC}"
+echo -e "${GREEN}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "${BLUE}What's next?${NC}"
 echo ""

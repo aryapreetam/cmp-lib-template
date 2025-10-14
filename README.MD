@@ -285,7 +285,10 @@ But if you want to verify publishing from your local machine, you can follow bel
    # this will copy it for pasting in github actions secrets.
    gpg --export-secret-keys --armor <key id> | pbcopy
    ```
-5) Run `./gradlew :lib:publishAndReleaseToMavenCentral --no-configuration-cache`
+2) Run `./gradlew :lib:publishAndReleaseToMavenCentral --no-configuration-cache`
+   
+Now check the deployments here https://central.sonatype.com/publishing/deployments 
+
 
 ## License
 

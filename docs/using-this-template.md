@@ -41,17 +41,19 @@ We provide an interactive setup script that configures everything for you!
 ```
 
 The script will prompt you for:
-- Repository name (e.g., `cmp-mediaviewer`)
-- Maven artifact name (e.g., `mediaviewer`)
-- GitHub username/organization
-- Maven group ID (e.g., `io.github.yourname`)
-- Developer name (for POM metadata)
-- Library description (for POM metadata)
-- Initial version (default: `0.0.1`)
+- **Library name** (e.g., `Media Viewer Library`) - Human-readable name for Maven Central
+- **Maven artifact name** (e.g., `cmp-mediaviewer`) - Technical dependency name
+- **GitHub username/organization** - Auto-detected from git remote
+- **Maven group ID** (e.g., `io.github.yourname`)
+- **Developer name** (for POM metadata)
+- **Library description** (for POM metadata)
+- **Initial version** (default: `0.0.1`)
+
+> **Note:** The repository name is automatically detected from your git remote, so you don't need to enter it!
 
 **What it does automatically:**
 - ✅ Updates `settings.gradle.kts` with your project name
-- ✅ Updates `lib/build.gradle.kts` with your Maven coordinates, version, and URLs
+- ✅ Updates `lib/build.gradle.kts` with your Maven coordinates, library name, version, and URLs
 - ✅ Updates `CONTRIBUTING.md` and `README.MD` with your project info
 - ✅ **Creates your package structure:** `lib/src/commonMain/kotlin/io/github/yourname/yourlibname/`
 - ✅ Keeps the `fiblib` example code for reference (delete when ready)
@@ -61,25 +63,32 @@ The script will prompt you for:
 ```bash
 $ ./setup-template.sh
 
-============================================================
-   Compose Multiplatform Library Template Setup
-============================================================
+╔═══════════════════════════════════════════════════════════╗
+║   Compose Multiplatform Library Template Setup            ║
+╚═══════════════════════════════════════════════════════════╝
 
-Repository name [cmp-mediaviewer]: cmp-mediaviewer
-Maven artifact name [mediaviewer]: mediaviewer
-GitHub username/organization: johnsmith
-Maven group ID [io.github.johnsmith]: io.github.johnsmith
+Repository detected: cmp-mediaviewer
+
+Library name [e.g., Media Viewer Library]: Media Viewer
+Maven artifact name [cmp-mediaviewer]: 
+GitHub username/organization [johnsmith]: 
+Maven group ID [io.github.johnsmith]: 
 Developer name (for POM): John Smith
 Library description (for POM): A modern media viewer for Compose Multiplatform
-Initial version [0.0.1]: 1.0.0
+Initial version [0.0.1]: 
 
 Configuration Summary:
-Repository name:      cmp-mediaviewer
-Artifact name:        mediaviewer
-Version:              1.0.0
+═══════════════════════════════════════════════════════════
+Library name:         Media Viewer
+Artifact name:        cmp-mediaviewer
+Version:              0.0.1
 GitHub org:           johnsmith
 Maven group ID:       io.github.johnsmith
-...
+Developer name:       John Smith
+Library description:  A modern media viewer for Compose Multiplatform
+Package name:         io.github.johnsmith.cmpmediaviewer
+Package path:         io/github/johnsmith/cmpmediaviewer
+═══════════════════════════════════════════════════════════
 
 ✅ Setup Complete!
 ```
@@ -339,11 +348,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class YourTest {
-    @Test
-    fun testYourAwesomeFunction() {
-        val result = yourAwesomeFunction()
-        assertEquals("Hello from your library!", result)
-    }
+  @Test
+  fun testYourAwesomeFunction() {
+    val result = yourAwesomeFunction()
+    assertEquals("Hello from your library!", result)
+  }
 }
 ```
 
@@ -358,7 +367,7 @@ import io.github.yourname.yourlibname.yourAwesomeFunction
 
 @Composable
 fun App() {
-    Text(yourAwesomeFunction())
+  Text(yourAwesomeFunction())
 }
 ```
 

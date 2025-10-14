@@ -27,12 +27,11 @@ if exist "%CONFIG_FILE%" (
     echo.
 )
 
-REM Detect git remote URL for defaults
+REM Detect git remote URL for auto-detecting repository name and org
 set DETECTED_ORG=
 set DETECTED_REPO=
 for /f "delims=" %%i in ('git remote get-url origin 2^>nul') do set GIT_REMOTE=%%i
 if defined GIT_REMOTE (
-    echo Detected git remote: !GIT_REMOTE!
     REM Extract org and repo from github.com URLs
     echo !GIT_REMOTE! | findstr /i "github.com" >nul
     if !errorlevel! equ 0 (
@@ -44,25 +43,31 @@ if defined GIT_REMOTE (
     )
 )
 
-echo Please provide your library configuration:
-echo.
-
-REM Repository name
-if defined DETECTED_REPO (
-    set /p REPO_NAME="Repository name [!DETECTED_REPO!]: "
-    if "!REPO_NAME!"=="" set REPO_NAME=!DETECTED_REPO!
-) else (
-    set /p REPO_NAME="Repository name (e.g., cmp-mediaviewer): "
-    if "!REPO_NAME!"=="" (
-        echo [ERROR] Repository name cannot be empty!
-        exit /b 1
-    )
+REM Validate that we have detected a repository
+if not defined DETECTED_REPO (
+    echo [ERROR] Could not detect repository name from git remote!
+    echo Please make sure you've created this repository from the template and have a git remote configured.
+    exit /b 1
 )
 
-REM Artifact name (default: repo name without cmp- prefix)
-set DEFAULT_ARTIFACT=!REPO_NAME:cmp-=!
-set /p ARTIFACT_NAME="Maven artifact name [!DEFAULT_ARTIFACT!]: "
-if "!ARTIFACT_NAME!"=="" set ARTIFACT_NAME=!DEFAULT_ARTIFACT!
+REM Use detected repository name (no user input)
+set REPO_NAME=!DETECTED_REPO!
+
+echo Please provide your library configuration:
+echo.
+echo Repository detected: !REPO_NAME!
+echo.
+
+REM Library name (human-readable, for POM)
+set /p LIBRARY_NAME="Library name [e.g., Media Viewer Library]: "
+if "!LIBRARY_NAME!"=="" (
+    echo [ERROR] Library name cannot be empty!
+    exit /b 1
+)
+
+REM Artifact name (default: repo name)
+set /p ARTIFACT_NAME="Maven artifact name [!REPO_NAME!]: "
+if "!ARTIFACT_NAME!"=="" set ARTIFACT_NAME=!REPO_NAME!
 
 REM GitHub org/username
 if defined DETECTED_ORG (
@@ -100,7 +105,7 @@ set DEFAULT_VERSION=0.0.1
 set /p VERSION="Initial version [!DEFAULT_VERSION!]: "
 if "!VERSION!"=="" set VERSION=!DEFAULT_VERSION!
 
-REM Generate package name (convert hyphens to empty, lowercase)
+REM Generate package name (remove hyphens and special chars, lowercase)
 set PACKAGE_NAME=!ARTIFACT_NAME:-=!
 REM Convert to lowercase
 for %%a in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do (
@@ -112,7 +117,7 @@ echo.
 echo ============================================================
 echo Configuration Summary:
 echo ============================================================
-echo Repository name:      !REPO_NAME!
+echo Library name:         !LIBRARY_NAME!
 echo Artifact name:        !ARTIFACT_NAME!
 echo Version:              !VERSION!
 echo GitHub org:           !GITHUB_ORG!
@@ -139,6 +144,7 @@ REM Save configuration to JSON
 echo {
 echo   "configured": true,
 echo   "repo_name": "!REPO_NAME!",
+echo   "library_name": "!LIBRARY_NAME!",
 echo   "artifact_name": "!ARTIFACT_NAME!",
 echo   "github_org": "!GITHUB_ORG!",
 echo   "group_id": "!GROUP_ID!",
@@ -149,6 +155,7 @@ echo   "package_path": "!PACKAGE_PATH!",
 echo   "version": "!VERSION!"
 echo }
 ) > "%CONFIG_FILE%"
+
 echo [OK] Configuration saved to %CONFIG_FILE%
 
 REM Backup old values for replacement
@@ -168,7 +175,7 @@ powershell -Command "(Get-Content 'settings.gradle.kts') -replace 'rootProject.n
 
 REM Replace in lib/build.gradle.kts
 echo [OK] Updating lib/build.gradle.kts...
-powershell -Command "$content = Get-Content 'lib/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'coordinates\(\"%OLD_GROUP%\", \"%OLD_ARTIFACT%\", \"%OLD_VERSION%\"', 'coordinates(\"!GROUP_ID!\", \"!ARTIFACT_NAME!\", \"!VERSION!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!ARTIFACT_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'lib/build.gradle.kts' $content"
+powershell -Command "$content = Get-Content 'lib/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'coordinates\(\"%OLD_GROUP%\", \"%OLD_ARTIFACT%\", \"%OLD_VERSION%\"', 'coordinates(\"!GROUP_ID!\", \"!ARTIFACT_NAME!\", \"!VERSION!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!LIBRARY_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'lib/build.gradle.kts' $content"
 
 REM Replace in CONTRIBUTING.md
 echo [OK] Updating CONTRIBUTING.md...
@@ -177,6 +184,10 @@ powershell -Command "(Get-Content 'CONTRIBUTING.md') -replace '%OLD_REPO%', '!RE
 REM Replace in README.MD
 echo [OK] Updating README.MD...
 powershell -Command "(Get-Content 'README.MD') -replace '%OLD_REPO%', '!REPO_NAME!' -replace '%OLD_ORG%', '!GITHUB_ORG!' -replace '%OLD_ARTIFACT%', '!ARTIFACT_NAME!' -replace '%OLD_GROUP%', '!GROUP_ID!' | Set-Content 'README.MD'"
+
+REM Remove the template setup warning section from README.MD
+echo [OK] Removing template setup warning from README.MD...
+powershell -Command "$content = Get-Content 'README.MD' -Raw; $content = $content -replace '(?s)<!-- ⚠️ TEMPLATE SETUP WARNING.*?<!-- END TEMPLATE SETUP WARNING -->', ''; Set-Content 'README.MD' $content"
 
 REM Replace in LICENSE
 echo [OK] Updating LICENSE...

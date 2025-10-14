@@ -14,15 +14,19 @@ That's it! The script will guide you through the rest.
 
 The script will prompt you for:
 
-1. **Repository name** (e.g., `cmp-mediaviewer`)
-   - Usually your GitHub repo name
+1. **Library name** (e.g., `Media Viewer Library`)
+   - Human-readable name shown on Maven Central
+   - Used in POM metadata (see image below)
+   
+   ![Maven POM Name Display](readme_images/maven-lib-pom-name.png)
 
-2. **Artifact name** (e.g., `mediaviewer`)
-   - The name used in Maven dependencies
-   - Default: repo name without `cmp-` prefix
+2. **Artifact name** (e.g., `cmp-mediaviewer`)
+   - The technical name used in Maven dependencies
+   - Default: your repository name (detected automatically)
 
 3. **GitHub username/org** (e.g., `johnsmith`)
    - Your GitHub username or organization
+   - Auto-detected from git remote
 
 4. **Maven group ID** (e.g., `io.github.johnsmith`)
    - Follows reverse domain convention
@@ -39,12 +43,14 @@ The script will prompt you for:
    - Default: `0.0.1`
    - Press Enter for default or enter custom (e.g., `1.0.0`)
 
+> **Note:** Repository name is automatically detected from your git remote URL, so you don't need to enter it manually!
+
 ---
 
 ## What Happens Automatically
 
 ✅ Updates `settings.gradle.kts` with your project name  
-✅ Updates `lib/build.gradle.kts` with Maven coordinates and version  
+✅ Updates `lib/build.gradle.kts` with Maven coordinates, library name, and version  
 ✅ Creates your package: `lib/src/commonMain/kotlin/io/github/yourname/yourlib/`  
 ✅ Updates all documentation with your project info  
 ✅ Keeps example `fiblib` code as reference  
