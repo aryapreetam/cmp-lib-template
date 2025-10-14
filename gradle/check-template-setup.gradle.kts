@@ -39,26 +39,26 @@ abstract class CheckTemplateSetupTask : DefaultTask() {
             val errorMessage = """
                 
                 ╔════════════════════════════════════════════════════════════╗
-                ║              ⚠️  TEMPLATE NOT CONFIGURED ⚠️               ║
-                ╠════════════════════════════════════════════════════════════╣
+                ║      ⚠️  SETUP REQUIRED: Run setup-template script ⚠️     ║
+                ╠═══════════════════════���════════════════════════════════════╣
                 ║                                                            ║
-                ║  This project was created from a template and needs to     ║
-                ║  be configured with your library details.                  ║
+                ║  Before building, you need to configure this template      ║
+                ║  with your library's information.                          ║
                 ║                                                            ║
-                ║  Project directory: $dirName
-                ║  settings.gradle.kts still shows: cmp-lib-template         ║
-                ║                                                            ║
-                ║  Please run:                                               ║
+                ║  Run the setup script:                                     ║
                 ║                                                            ║
                 ║      ./setup-template.sh       (Linux/Mac)                 ║
                 ║      setup-template.bat        (Windows)                   ║
                 ║                                                            ║
-                ║  This will configure your library name, package            ║
-                ║  structure, and Maven coordinates.                         ║
+                ║  This will configure:                                      ║
+                ║  • Library name and package structure                      ║
+                ║  • Maven coordinates                                       ║
+                ║  • GitHub organization                                     ║
+                ║  • Developer information                                   ║
                 ║                                                            ║
-                ║  See: docs/using-this-template.md for details              ║
+                ║  For details: docs/using-this-template.md                  ║
                 ║                                                            ║
-                ╚════════════════════════════════════════════════════════════╝
+                ╚═══════════════════════════════════════════════════════���════╝
                 
             """.trimIndent()
 

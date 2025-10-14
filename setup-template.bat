@@ -162,16 +162,6 @@ set OLD_DESCRIPTION=Compose Multiplatform library for fibonacci numbers
 set OLD_LIB_NAME=Fibonacci Library
 set OLD_VERSION=0.0.3
 
-REM Check if we need to inject the template warning
-REM (only if this is a new repo created from template, not the template itself)
-if not "!REPO_NAME!"=="cmp-lib-template" (
-    echo [OK] Adding template setup warning to README.MD...
-    if exist ".github\README.template.md" (
-        REM Extract warning section and prepend to README.MD
-        powershell -Command "$template = Get-Content '.github/README.template.md' -Raw; $warningEnd = $template.IndexOf('<!-- TEMPLATE_CONTENT_STARTS_HERE -->'); $warning = $template.Substring(0, $warningEnd).TrimEnd(); $readme = Get-Content 'README.MD' -Raw; Set-Content 'README.MD' ($warning + \"`r`n`r`n\" + $readme)"
-    )
-)
-
 REM Replace in settings.gradle.kts
 echo [OK] Updating settings.gradle.kts...
 powershell -Command "(Get-Content 'settings.gradle.kts') -replace 'rootProject.name = \"%OLD_REPO%\"', 'rootProject.name = \"!REPO_NAME!\"' | Set-Content 'settings.gradle.kts'"
@@ -187,10 +177,6 @@ powershell -Command "(Get-Content 'CONTRIBUTING.md') -replace '%OLD_REPO%', '!RE
 REM Replace in README.MD
 echo [OK] Updating README.MD...
 powershell -Command "(Get-Content 'README.MD') -replace '%OLD_REPO%', '!REPO_NAME!' -replace '%OLD_ORG%', '!GITHUB_ORG!' -replace '%OLD_ARTIFACT%', '!ARTIFACT_NAME!' -replace '%OLD_GROUP%', '!GROUP_ID!' | Set-Content 'README.MD'"
-
-REM Remove the template setup warning section from README.MD
-echo [OK] Removing template setup warning from README.MD...
-powershell -Command "$content = Get-Content 'README.MD' -Raw; $content = $content -replace '(?s)<!-- ⚠️ TEMPLATE SETUP WARNING.*?<!-- END TEMPLATE SETUP WARNING -->\r?\n\r?\n---\r?\n\r?\n', ''; Set-Content 'README.MD' $content"
 
 REM Replace in LICENSE
 echo [OK] Updating LICENSE...
