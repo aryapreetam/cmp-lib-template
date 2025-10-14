@@ -17,7 +17,7 @@ CONFIG_FILE=".template-config.json"
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   Compose Multiplatform Library Template Setup            ║${NC}"
-echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}╔═══════════════════════���════════════════════════════════════╗${NC}"
 echo ""
 
 # Check if already configured
@@ -161,6 +161,22 @@ OLD_DESCRIPTION="Compose Multiplatform library for fibonacci numbers"
 OLD_LIB_NAME="Fibonacci Library"
 OLD_VERSION="0.0.3"
 
+# Check if we need to inject the template warning
+# (only if this is a new repo created from template, not the template itself)
+if [ "$REPO_NAME" != "cmp-lib-template" ]; then
+  echo -e "${GREEN}✓${NC} Adding template setup warning to README.MD..."
+  # Extract warning section from template and inject at the top of README
+  if [ -f ".github/README.template.md" ]; then
+    # Get the warning section from template
+    WARNING_SECTION=$(sed -n '/<!-- ⚠️ TEMPLATE SETUP WARNING/,/<!-- TEMPLATE_CONTENT_STARTS_HERE -->/p' .github/README.template.md | head -n -2)
+    # Create temporary file with warning + original README
+    echo "$WARNING_SECTION" > README.MD.tmp
+    echo "" >> README.MD.tmp
+    cat README.MD >> README.MD.tmp
+    mv README.MD.tmp README.MD
+  fi
+fi
+
 # Replace in settings.gradle.kts
 echo -e "${GREEN}✓${NC} Updating settings.gradle.kts..."
 sed -i.bak "s/rootProject.name = \"$OLD_REPO\"/rootProject.name = \"$REPO_NAME\"/" settings.gradle.kts
@@ -192,6 +208,11 @@ sed -i.bak "s|$OLD_REPO|$REPO_NAME|g" README.MD
 sed -i.bak "s|$OLD_ORG|$GITHUB_ORG|g" README.MD
 sed -i.bak "s|$OLD_ARTIFACT|$ARTIFACT_NAME|g" README.MD
 sed -i.bak "s|$OLD_GROUP|$GROUP_ID|g" README.MD
+
+# Remove the template setup warning section from README.MD
+echo -e "${GREEN}✓${NC} Removing template setup warning from README.MD..."
+sed -i.bak '/<!-- ⚠️ TEMPLATE SETUP WARNING/,/<!-- END TEMPLATE SETUP WARNING -->/d' README.MD
+
 rm -f README.MD.bak
 
 # Replace in LICENSE
