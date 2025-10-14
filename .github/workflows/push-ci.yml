@@ -6,7 +6,29 @@ on:
       - '**'
     tags-ignore:
       - 'v*'
+    paths:
+      # Run CI only when these files/directories change
+      - 'lib/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+      - 'maestro-e2e/**'
   pull_request:
+    paths:
+      # Same path filters for PRs
+      - 'lib/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+      - 'maestro-e2e/**'
 
 permissions:
   contents: read

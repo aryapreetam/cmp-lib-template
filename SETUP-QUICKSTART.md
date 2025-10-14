@@ -53,8 +53,8 @@ The script will prompt you for:
 
 ## After Setup
 
-1. **Remove the warning** from top of `README.MD`
-2. **Add your code** in the new package directory
+1. **Add your code** in the new package directory
+2. **Delete example `fiblib`** code when you're ready
 3. **Commit changes:**
    ```bash
    git add .
