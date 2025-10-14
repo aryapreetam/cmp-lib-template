@@ -1,5 +1,30 @@
 <h1 align="center">Compose Multiplatform Library Template</h1>
 
+<!-- ⚠️ TEMPLATE SETUP CHECK -->
+<!-- This section will show a warning if the template hasn't been configured yet -->
+<!-- Once you run setup-template.sh and commit changes, remove this comment block -->
+
+> [!IMPORTANT]
+> **🚨 TEMPLATE SETUP REQUIRED 🚨**
+> 
+> This project was created from a template and needs to be configured with your library details.
+> 
+> **Quick Start:**
+> ```bash
+> ./setup-template.sh
+> ```
+> 
+> This interactive script will:
+> - Configure your library name, package structure, and Maven coordinates
+> - Create your library's package directory structure
+> - Update all references throughout the project
+> 
+> **After setup, delete this warning block from README.MD**
+> 
+> For more details, see [Using This Template](docs/using-this-template.md)
+
+---
+
 <p align="center">
   <img src="https://img.shields.io/badge/Compose%20Multiplatform-v1.9.0-4285F4?logo=jetpackcompose" alt="Compose Multiplatform Version">
   <img src="https://img.shields.io/badge/Kotlin-v2.2.20-blueviolet?logo=kotlin" alt="Kotlin Version">

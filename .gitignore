@@ -1,4 +1,3 @@
-
 *.iml
 .gradle
 .idea
@@ -17,3 +16,5 @@ Pods/
 *yarn.lock
 /.github/copilot-instructions.md
 /doc-to-ignore/
+# Template configuration (each user should run setup-template.sh)
+.template-config.json

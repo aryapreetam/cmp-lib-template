@@ -7,3 +7,6 @@ plugins {
   alias(libs.plugins.android.application).apply(false)
   alias(libs.plugins.composeHotReload) apply false
 }
+
+// Apply template setup check
+apply(from = "gradle/check-template-setup.gradle.kts")

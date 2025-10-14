@@ -1,0 +1,12 @@
+{
+  "configured": false,
+  "repo_name": "cmp-lib-template",
+  "artifact_name": "fiblib",
+  "github_org": "aryapreetam",
+  "group_id": "io.github.aryapreetam",
+  "developer_name": "Preetam Bhosle",
+  "library_description": "Compose Multiplatform library for fibonacci numbers",
+  "package_name": "io.github.aryapreetam.fiblib",
+  "package_path": "io/github/aryapreetam/fiblib"
+}
+

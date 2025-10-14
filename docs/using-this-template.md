@@ -6,9 +6,10 @@ This guide walks you through adapting this template for your own Compose Multipl
 
 ## 📋 Quick Checklist
 
-- [ ] Fork/clone this repository
-- [ ] Rename all identifiers (package names, artifact IDs)
-- [ ] Update library metadata (POM info)
+- [ ] Use this template to create your repository
+- [ ] Clone your new repository
+- [ ] **Run `./setup-template.sh`** (automated setup - recommended!)
+- [ ] Delete the example `fiblib` code when ready
 - [ ] Setup GitHub secrets for publishing
 - [ ] Write your library code
 - [ ] Update documentation
@@ -17,140 +18,194 @@ This guide walks you through adapting this template for your own Compose Multipl
 
 ---
 
-## Step 1: Fork or Use Template
+## Step 1: Create Your Repository from Template
 
-### Option A: Use as Template (Recommended)
 1. Click "Use this template" button on GitHub
-2. Create a new repository with your library name
-3. Clone your new repository
-
-### Option B: Fork
-1. Fork this repository
-2. Clone your fork
-3. Remove the template-specific commit history (optional):
+2. Create a new repository with your library name (e.g., `cmp-mediaviewer`)
+3. Clone your new repository:
    ```bash
-   git checkout --orphan new-main
-   git add -A
-   git commit -m "Initial commit from template"
-   git branch -D main
-   git branch -m main
-   git push -f origin main
+   git clone https://github.com/yourname/cmp-mediaviewer.git
+   cd cmp-mediaviewer
    ```
 
 ---
 
-## Step 2: Rename Identifiers
+## Step 2: Run Automated Setup (Recommended)
 
-### 2.1 Update Package Names
+We provide an interactive setup script that configures everything for you!
+
+### **🚀 Quick Setup:**
+
+```bash
+./setup-template.sh
+```
+
+The script will prompt you for:
+- Repository name (e.g., `cmp-mediaviewer`)
+- Maven artifact name (e.g., `mediaviewer`)
+- GitHub username/organization
+- Maven group ID (e.g., `io.github.yourname`)
+- Developer name (for POM metadata)
+- Library description (for POM metadata)
+- Initial version (default: `0.0.1`)
+
+**What it does automatically:**
+- ✅ Updates `settings.gradle.kts` with your project name
+- ✅ Updates `lib/build.gradle.kts` with your Maven coordinates, version, and URLs
+- ✅ Updates `CONTRIBUTING.md` and `README.MD` with your project info
+- ✅ **Creates your package structure:** `lib/src/commonMain/kotlin/io/github/yourname/yourlibname/`
+- ✅ Keeps the `fiblib` example code for reference (delete when ready)
+- ✅ Saves configuration to `.template-config.json` (for re-runs)
+
+**Example run:**
+```bash
+$ ./setup-template.sh
+
+============================================================
+   Compose Multiplatform Library Template Setup
+============================================================
+
+Repository name [cmp-mediaviewer]: cmp-mediaviewer
+Maven artifact name [mediaviewer]: mediaviewer
+GitHub username/organization: johnsmith
+Maven group ID [io.github.johnsmith]: io.github.johnsmith
+Developer name (for POM): John Smith
+Library description (for POM): A modern media viewer for Compose Multiplatform
+Initial version [0.0.1]: 1.0.0
+
+Configuration Summary:
+Repository name:      cmp-mediaviewer
+Artifact name:        mediaviewer
+Version:              1.0.0
+GitHub org:           johnsmith
+Maven group ID:       io.github.johnsmith
+...
+
+✅ Setup Complete!
+```
+
+### **Windows Users:**
+
+For Windows, you have a few options:
+- **Git Bash:** Run `./setup-template.sh` (recommended)
+- **WSL (Windows Subsystem for Linux):** Run `./setup-template.sh`
+- **Basic batch script:** Run `setup-template.bat` (limited functionality)
+
+### **Re-running the Setup:**
+
+Made a mistake? No problem! The script can be run multiple times:
+```bash
+./setup-template.sh
+```
+
+It will detect the existing configuration and ask if you want to reconfigure.
+
+---
+
+## Step 3: Start Building Your Library
+
+After running the setup script:
+
+1. **Your new package structure is ready:**
+   ```
+   lib/src/commonMain/kotlin/io/github/yourname/yourlibname/
+   ```
+
+2. **Add your library code** in the new package directory
+
+3. **Keep or delete the `fiblib` example:**
+   - The `fiblib` package is kept as a working reference
+   - Delete it when you're ready:
+     ```bash
+     rm -rf lib/src/commonMain/kotlin/fiblib
+     rm -rf lib/src/commonTest/kotlin/fiblib
+     ```
+
+4. **Update the sample app** to use your library:
+   - Edit `sample/composeApp/src/commonMain/kotlin/sample/app/App.kt`
+   - Replace `import fiblib.*` with your package imports
+
+5. **Commit your changes:**
+   ```bash
+   git add .
+   git commit -m "Configure template for cmp-mediaviewer"
+   git push
+   ```
+
+---
+
+## Step 4 (Alternative): Manual Setup
+
+If you prefer to configure manually without the script:
+
+### 4.1 Update Package Names
+
+**In `settings.gradle.kts`:**
+```kotlin
+rootProject.name = "your-repo-name"
+```
 
 **In `lib/build.gradle.kts`:**
 ```kotlin
 android {
-  namespace = "io.github.yourname.yourlibname"  // Change this
+  namespace = "io.github.yourname.yourlibname"
   // ...
 }
 
 mavenPublishing {
-  coordinates("io.github.yourname", "yourlibname", "0.1.0")  // Change group & artifact
-  // ...
-}
-```
-
-**In `lib/src/commonMain/kotlin/`:**
-1. Rename package directory from `fiblib/` to `yourlibname/`
-2. Update package declarations in all `.kt` files:
-   ```kotlin
-   package io.github.yourname.yourlibname  // Change this
-   ```
-
-**In `lib/src/commonTest/kotlin/`:**
-1. Rename test package directory
-2. Update package declarations
-
-### 2.2 Update Sample App
-
-**In `sample/composeApp/build.gradle.kts`:**
-```kotlin
-android {
-  namespace = "sample.app"  // You can keep this or change it
-  defaultConfig {
-    applicationId = "sample.app"  // Change if desired
-  }
-}
-```
-
-**In `sample/composeApp/src/commonMain/kotlin/`:**
-- Update imports to use your new package name
-
-### 2.3 Update Root Configuration
-
-**In `settings.gradle.kts`:**
-```kotlin
-rootProject.name = "your-lib-name"  // Change this
-
-include(":lib")
-include(":sample:composeApp")
-```
-
-### 2.4 Find & Replace
-
-Use global find/replace in your IDE:
-- Find: `io.github.aryapreetam` → Replace: `io.github.yourname`
-- Find: `fiblib` → Replace: `yourlibname`
-- Find: `aryapreetam` → Replace: `yourname`
-- Find: `cmp-lib-template` → Replace: `your-repo-name`
-
----
-
-## Step 3: Update Library Metadata
-
-**In `lib/build.gradle.kts` - Update POM info:**
-
-```kotlin
-mavenPublishing {
-  coordinates("io.github.yourname", "yourlibname", "0.1.0")
-
+  coordinates("io.github.yourname", "yourlibname", "0.0.1")
+  
   pom {
-    name = "Your Library Name"  // Change
-    description = "Description of what your library does"  // Change
-    url = "https://yourname.github.io/your-repo"  // Change
-
-    licenses {
-      license {
-        name = "MIT"  // Or your chosen license
-        url = "https://opensource.org/licenses/MIT"
-      }
-    }
-
+    name = "Your Library Name"
+    description = "Your library description"
+    url = "https://yourname.github.io/your-repo-name"
+    
     developers {
       developer {
-        id = "yourname"  // Change
-        name = "Your Full Name"  // Change
-        email = "your.email@example.com"  // Optional
+        id = "yourname"
+        name = "Your Name"
       }
     }
-
+    
     scm {
-      url = "https://github.com/yourname/your-repo"  // Change
-      connection = "scm:git:git://github.com/yourname/your-repo.git"  // Optional
-      developerConnection = "scm:git:ssh://git@github.com/yourname/your-repo.git"  // Optional
+      url = "https://github.com/yourname/your-repo-name"
     }
   }
 }
 ```
 
+### 4.2 Create Package Structure
+
+Create your package directories:
+```bash
+mkdir -p lib/src/commonMain/kotlin/io/github/yourname/yourlibname
+mkdir -p lib/src/commonTest/kotlin/io/github/yourname/yourlibname
+```
+
+### 4.3 Update Documentation Files
+
+- Find: `cmp-lib-template` → Replace: `your-repo-name`
+- Find: `aryapreetam` → Replace: `yourname`
+- Find: `fiblib` → Replace: `yourlibname`
+- Find: `io.github.aryapreetam` → Replace: `io.github.yourname`
+
+Files to update:
+- `README.MD`
+- `CONTRIBUTING.md`
+- `docs/using-this-template.md` (this file)
+
 ---
 
-## Step 4: Setup GitHub Secrets
+## Step 5: Setup GitHub Secrets
 
-### 4.1 Create Sonatype Account
+### 5.1 Create Sonatype Account
 
 1. Go to https://central.sonatype.com/
 2. Sign up for an account
 3. Verify your namespace (e.g., `io.github.yourname`)
    - For GitHub: Use `io.github.yourname` and verify via a public repo
 
-### 4.2 Generate GPG Key
+### 5.2 Generate GPG Key
 
 ```bash
 # Generate a new GPG key
@@ -170,7 +225,7 @@ gpg --export-secret-keys --armor ABCD1234EFGH5678 > private-key.asc
 gpg --keyserver keyserver.ubuntu.com --send-keys ABCD1234EFGH5678
 ```
 
-### 4.3 Add GitHub Secrets
+### 5.3 Add GitHub Secrets
 
 Go to: **Your Repo → Settings → Secrets and variables → Actions → New repository secret**
 
@@ -178,8 +233,8 @@ Add these 5 secrets:
 
 | Secret Name | Value | How to Get |
 |------------|-------|------------|
-| `MAVEN_CENTRAL_USERNAME` | Your Sonatype username | From step 4.1 |
-| `MAVEN_CENTRAL_PASSWORD` | Your Sonatype password | From step 4.1 (or generate token) |
+| `MAVEN_CENTRAL_USERNAME` | Your Sonatype username | From step 5.1 |
+| `MAVEN_CENTRAL_PASSWORD` | Your Sonatype password | From step 5.1 (or generate token) |
 | `SIGNING_KEY_ID` | Last 8 chars of GPG key ID | e.g., `EFGH5678` |
 | `SIGNING_PASSWORD` | Your GPG key passphrase | What you entered when creating key |
 | `GPG_KEY_CONTENTS` | Contents of `private-key.asc` | Copy entire file including BEGIN/END lines |
@@ -194,9 +249,9 @@ lQdGBF...base64-encoded-content...
 
 ---
 
-## Step 5: Update Documentation
+## Step 6: Update Documentation
 
-### 5.1 Update README.MD
+### 6.1 Update README.MD
 
 Replace template-specific content:
 
@@ -209,7 +264,7 @@ Brief description of what your library does.
 
 - Feature 1
 - Feature 2
-- Feature 3
+- - Feature 3
 
 ## Installation
 
@@ -231,7 +286,7 @@ Brief description of what your library does.
 - `fiblib` → `yourlibname`
 - All usage examples with your actual library code
 
-### 5.2 Update LICENSE
+### 6.2 Update LICENSE
 
 Replace the name and year in `LICENSE` file:
 ```
@@ -242,21 +297,21 @@ Copyright (c) 2025 Your Name
 [Rest of MIT license text]
 ```
 
-### 5.3 Update CONTRIBUTING.md
+### 6.3 Update CONTRIBUTING.md
 
 Replace repository-specific URLs:
 - `https://github.com/aryapreetam/cmp-lib-template` → Your repo URL
 
 ---
 
-## Step 6: Write Your Library Code
+## Step 7: Write Your Library Code
 
-### 6.1 Remove Template Code
+### 7.1 Remove Template Code
 
 1. Delete `lib/src/commonMain/kotlin/fiblib/Fibonacci.kt`
 2. Delete `lib/src/commonTest/kotlin/fiblib/FibonacciTest.kt`
 
-### 6.2 Add Your Code
+### 7.2 Add Your Code
 
 Create your library files in `lib/src/commonMain/kotlin/yourpackage/`:
 
@@ -272,7 +327,7 @@ fun yourAwesomeFunction(): String {
 }
 ```
 
-### 6.3 Add Tests
+### 7.3 Add Tests
 
 Create tests in `lib/src/commonTest/kotlin/yourpackage/`:
 
@@ -292,7 +347,7 @@ class YourTest {
 }
 ```
 
-### 6.4 Update Sample App
+### 7.4 Update Sample App
 
 Update `sample/composeApp/src/commonMain/kotlin/sample/app/App.kt` to demonstrate your library:
 
@@ -309,9 +364,9 @@ fun App() {
 
 ---
 
-## Step 7: Test Locally
+## Step 8: Test Locally
 
-### 7.1 Build & Test
+### 8.1 Build & Test
 
 ```bash
 # Clean build
@@ -326,7 +381,7 @@ fun App() {
 ./gradlew :lib:wasmJsBrowserTest
 ```
 
-### 7.2 Test Sample Apps
+### 8.2 Test Sample Apps
 
 ```bash
 # Android
@@ -339,7 +394,7 @@ fun App() {
 ./gradlew :sample:composeApp:wasmJsBrowserDevelopmentRun --continuous
 ```
 
-### 7.3 Test Publishing Locally
+### 8.3 Test Publishing Locally
 
 ```bash
 # Publish to Maven Local
@@ -351,9 +406,9 @@ ls ~/.m2/repository/io/github/yourname/yourlibname/
 
 ---
 
-## Step 8: Test CI/CD Pipeline
+## Step 9: Test CI/CD Pipeline
 
-### 8.1 Push Changes
+### 9.1 Push Changes
 
 ```bash
 git add .
@@ -366,7 +421,7 @@ This will trigger the `push-ci.yml` workflow which runs:
 - All platform tests (JVM, iOS, wasm, Android)
 - Android UI tests
 
-### 8.2 Monitor Workflow
+### 9.2 Monitor Workflow
 
 Go to: **Your Repo → Actions tab**
 
@@ -376,7 +431,7 @@ Verify all jobs pass:
 - ✅ test-android-unit
 - ✅ android-ui-tests
 
-### 8.3 Fix Any Failures
+### 9.3 Fix Any Failures
 
 Common issues:
 - Package name mismatches
@@ -385,9 +440,9 @@ Common issues:
 
 ---
 
-## Step 9: Create Your First Release
+## Step 10: Create Your First Release
 
-### 9.1 Verify Secrets
+### 10.1 Verify Secrets
 
 Double-check all 5 GitHub secrets are set correctly:
 - MAVEN_CENTRAL_USERNAME
@@ -396,7 +451,7 @@ Double-check all 5 GitHub secrets are set correctly:
 - SIGNING_PASSWORD
 - GPG_KEY_CONTENTS
 
-### 9.2 Create Release Tag
+### 10.2 Create Release Tag
 
 ```bash
 # Ensure version in lib/build.gradle.kts is correct
@@ -406,7 +461,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-### 9.3 Monitor Release Workflow
+### 10.3 Monitor Release Workflow
 
 Go to: **Actions → Publish Multiplatform Release**
 
@@ -417,7 +472,7 @@ The workflow will:
 4. ✅ Publish to Maven Central
 5. ✅ Deploy docs to GitHub Pages
 
-### 9.4 Verify Publication
+### 10.4 Verify Publication
 
 **GitHub Release:**
 - Go to: **Your Repo → Releases**
@@ -435,7 +490,7 @@ The workflow will:
 
 ---
 
-## Step 10: Update Version Badge (Optional)
+## Step 11: Update Version Badge (Optional)
 
 Add a Maven Central version badge to your README:
 
@@ -480,4 +535,3 @@ Your library is now:
 - Check CONTRIBUTING.md for development guidelines
 - Open an issue if you encounter problems
 - Review existing issues for common problems
-
