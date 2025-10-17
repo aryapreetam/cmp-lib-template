@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
+import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -14,7 +15,13 @@ plugins {
 kotlin {
   jvmToolchain(17)
 
-  androidTarget { publishLibraryVariants("release") }
+  //androidTarget { publishLibraryVariants("release") }
+  androidLibrary {
+    namespace = "io.github.aryapreetam.fiblib"
+    compileSdk = 35
+    minSdk = 21
+    withHostTest {  }
+  }
   jvm()
   wasmJs { browser() }
   iosX64()
@@ -45,14 +52,14 @@ kotlin {
 
 }
 
-android {
-  namespace = "io.github.aryapreetam.fiblib"
-  compileSdk = 35
-
-  defaultConfig {
-    minSdk = 21
-  }
-}
+//android {
+//  namespace = "io.github.aryapreetam.fiblib"
+//  compileSdk = 35
+//
+//  defaultConfig {
+//    minSdk = 21
+//  }
+//}
 
 dependencies {
   dokkaPlugin(libs.android.documentation.plugin)
