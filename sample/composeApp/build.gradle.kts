@@ -10,7 +10,6 @@ plugins {
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.compose)
   alias(libs.plugins.android.application)
-  alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
