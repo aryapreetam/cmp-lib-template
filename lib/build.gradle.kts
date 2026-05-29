@@ -18,7 +18,7 @@ kotlin {
   androidLibrary {
     namespace = "io.github.aryapreetam.fiblib"
     compileSdk = 35
-    minSdk = 21
+    minSdk = 23
     withHostTest {  }
     androidResources {
       enable = true
