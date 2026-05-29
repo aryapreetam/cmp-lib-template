@@ -35,4 +35,5 @@ plugins {
 
 include(":lib")
 include(":sample:composeApp")
+include(":sample:androidApp")
 

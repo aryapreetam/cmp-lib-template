@@ -290,6 +290,15 @@ But if you want to verify publishing from your local machine, you can follow bel
 Now check the deployments here https://central.sonatype.com/publishing/deployments 
 
 
+## 🔀 Transitioning to a Multi-Module Structure
+
+By default, this template produces a lightweight, single-module KMP library (`:lib`), which is ideal for most utility and UI libraries. However, as your library grows in complexity, you can manually expand it into a multi-module library.
+
+We provide a detailed step-by-step guide:
+👉 **[Transitioning to a Multi-Module Library Structure Guide](docs/multi-module-library-setup.md)**
+
+---
+
 ## License
 
 MIT License © 2025 aryapreetam and contributors. See [LICENSE](./LICENSE) for details.

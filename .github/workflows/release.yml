@@ -87,7 +87,7 @@ jobs:
       - name: Build APK and wasm
         if: steps.check-apk.outputs.exists == 'false'
         run: |
-          ./gradlew :sample:composeApp:assembleRelease
+          ./gradlew :sample:androidApp:assembleRelease
           ./gradlew :sample:composeApp:wasmJsBrowserDistribution
       - name: Build wasm only (APK reused)
         if: steps.check-apk.outputs.exists == 'true'
@@ -102,7 +102,7 @@ jobs:
             cp "${{ github.workspace }}/ci-artifacts/sample-app-android-unsigned.apk" "$GITHUB_WORKSPACE/release-upload/sample-app-android-unsigned.apk"
           else
             echo "Using freshly built APK"
-            APK_SRC=$(find sample/composeApp/build/outputs/apk -type f -name '*-release-*.apk' | head -n1)
+            APK_SRC=$(find sample/androidApp/build/outputs/apk/release/ -type f -name '*-release-*.apk' | head -n1)
             if [ -n "$APK_SRC" ]; then
               cp "$APK_SRC" "$GITHUB_WORKSPACE/release-upload/sample-app-android-unsigned.apk"
             fi

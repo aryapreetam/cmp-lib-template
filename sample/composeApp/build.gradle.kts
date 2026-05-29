@@ -9,15 +9,16 @@ plugins {
   alias(libs.plugins.multiplatform)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.compose)
-  alias(libs.plugins.android.application)
+  alias(libs.plugins.android.library)
 }
 
 kotlin {
   jvmToolchain(17)
 
-  androidTarget {
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
-    instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+  androidLibrary {
+    namespace = "sample.app"
+    compileSdk = 35
+    minSdk = 21
   }
   jvm()
   wasmJs {
@@ -37,20 +38,16 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(compose.runtime)
-      implementation(compose.ui)
-      implementation(compose.foundation)
+      implementation(libs.compose.runtime)
+      implementation(libs.compose.ui)
+      implementation(libs.compose.foundation)
       implementation(project(":lib"))
     }
 
     commonTest.dependencies {
       implementation(libs.kotlin.test)
       @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-      implementation(compose.uiTest)
-    }
-
-    androidMain.dependencies {
-      implementation(libs.androidx.activityCompose)
+      implementation(libs.compose.ui.test)
     }
 
     jvmMain.dependencies {
@@ -58,27 +55,6 @@ kotlin {
     }
 
   }
-}
-
-android {
-  namespace = "sample.app"
-  compileSdk = 35
-
-  defaultConfig {
-    minSdk = 21
-    targetSdk = 35
-
-    applicationId = "sample.app"
-    versionCode = 1
-    versionName = "1.0.0"
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-  }
-}
-
-dependencies {
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4-android:1.9.0")
-  debugImplementation("androidx.compose.ui:ui-test-manifest:1.9.0")
 }
 
 compose.desktop {

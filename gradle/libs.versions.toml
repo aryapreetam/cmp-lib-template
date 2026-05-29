@@ -1,7 +1,7 @@
 [versions]
 
-kotlin = "2.3.10"
-agp = "8.12.3"
+kotlin = "2.3.21"
+agp = "9.0.1"
 maven-publish = "0.36.0"
 compose = "1.10.1"
 androidx-activityCompose = "1.10.1"
@@ -11,6 +11,11 @@ dokka = "2.1.0"
 android-documentation-plugin = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "dokka" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
+
 
 [plugins]
 

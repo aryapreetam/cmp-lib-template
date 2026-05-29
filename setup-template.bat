@@ -173,9 +173,13 @@ REM Replace in settings.gradle.kts
 echo [OK] Updating settings.gradle.kts...
 powershell -Command "(Get-Content 'settings.gradle.kts') -replace 'rootProject.name = \"%OLD_REPO%\"', 'rootProject.name = \"!REPO_NAME!\"' | Set-Content 'settings.gradle.kts'"
 
+REM Replace in gradle.properties
+echo [OK] Updating gradle.properties...
+powershell -Command "$content = Get-Content 'gradle.properties' -Raw; $content = $content -replace 'libGroup=io.github.aryapreetam', 'libGroup=!GROUP_ID!'; $content = $content -replace 'libArtifactId=fiblib', 'libArtifactId=!ARTIFACT_NAME!'; $content = $content -replace 'libVersion=0.0.4', 'libVersion=!VERSION!'; Set-Content 'gradle.properties' $content"
+
 REM Replace in lib/build.gradle.kts
 echo [OK] Updating lib/build.gradle.kts...
-powershell -Command "$content = Get-Content 'lib/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'coordinates\(\"%OLD_GROUP%\", \"%OLD_ARTIFACT%\", \"%OLD_VERSION%\"', 'coordinates(\"!GROUP_ID!\", \"!ARTIFACT_NAME!\", \"!VERSION!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!LIBRARY_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'lib/build.gradle.kts' $content"
+powershell -Command "$content = Get-Content 'lib/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!LIBRARY_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'lib/build.gradle.kts' $content"
 
 REM Replace in CONTRIBUTING.md
 echo [OK] Updating CONTRIBUTING.md...
@@ -197,10 +201,67 @@ REM Replace in .github/workflows/release.yml
 echo [OK] Updating .github/workflows/release.yml...
 powershell -Command "(Get-Content '.github/workflows/release.yml') -replace 'name: ''%OLD_REPO%''', 'name: ''!REPO_NAME!''' -replace 'repo: ''https://github.com/%OLD_ORG%/%OLD_REPO%''', 'repo: ''https://github.com/!GITHUB_ORG!/!REPO_NAME!''' -replace '<title>Compose Multiplatform Library Template</title>', '<title>!REPO_NAME!</title>' | Set-Content '.github/workflows/release.yml'"
 
-REM Create new package directory structure
-echo [OK] Creating package structure: lib/src/commonMain/kotlin/!PACKAGE_PATH!
-mkdir "lib\src\commonMain\kotlin\!PACKAGE_PATH!" 2>nul
-mkdir "lib\src\commonTest\kotlin\!PACKAGE_PATH!" 2>nul
+REM Migrate package structures and search-and-replace namespaces across all 3 modules
+echo Migrating package structure...
+
+powershell -Command ^
+    "$packagePath = '!PACKAGE_PATH!';" ^
+    "$samplePackagePath = '!GROUP_ID!.!PACKAGE_NAME!.sample'.Replace('.', '/');" ^
+    "$androidPackagePath = '!GROUP_ID!.!PACKAGE_NAME!.android'.Replace('.', '/');" ^
+    "if (Test-Path 'lib/src/commonMain/kotlin/fiblib') {" ^
+    "  New-Item -ItemType Directory -Force -Path \"lib/src/commonMain/kotlin/$packagePath\" | Out-Null;" ^
+    "  Move-Item -Path 'lib/src/commonMain/kotlin/fiblib/*' -Destination \"lib/src/commonMain/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
+    "  Remove-Item -Recurse -Force 'lib/src/commonMain/kotlin/fiblib';" ^
+    "}" ^
+    "if (Test-Path 'lib/src/commonTest/kotlin/fiblib') {" ^
+    "  New-Item -ItemType Directory -Force -Path \"lib/src/commonTest/kotlin/$packagePath\" | Out-Null;" ^
+    "  Move-Item -Path 'lib/src/commonTest/kotlin/fiblib/*' -Destination \"lib/src/commonTest/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
+    "  Remove-Item -Recurse -Force 'lib/src/commonTest/kotlin/fiblib';" ^
+    "}" ^
+    "$sources = @('commonMain', 'commonTest', 'iosMain', 'jvmMain', 'wasmJsMain');" ^
+    "foreach ($src in $sources) {" ^
+    "  $oldDir = \"sample/composeApp/src/$src/kotlin/sample/app\";" ^
+    "  $newDir = \"sample/composeApp/src/$src/kotlin/$samplePackagePath\";" ^
+    "  if (Test-Path $oldDir) {" ^
+    "    New-Item -ItemType Directory -Force -Path $newDir | Out-Null;" ^
+    "    Move-Item -Path \"$oldDir/*\" -Destination $newDir -ErrorAction SilentlyContinue;" ^
+    "    Remove-Item -Recurse -Force $oldDir;" ^
+    "    # Remove empty parent directories" ^
+    "    $parent = Split-Path $oldDir -Parent;" ^
+    "    while ($parent -and $parent -ne 'sample/composeApp/src' -and $parent -ne 'sample/composeApp' -and (Test-Path $parent) -and (Get-ChildItem $parent).Count -eq 0) {" ^
+    "      Remove-Item $parent -Force;" ^
+    "      $parent = Split-Path $parent -Parent;" ^
+    "    }" ^
+    "  }" ^
+    "}" ^
+    "$oldAndroidDir = 'sample/androidApp/src/main/kotlin/sample/app/android';" ^
+    "$newAndroidDir = \"sample/androidApp/src/main/kotlin/$androidPackagePath\";" ^
+    "if (Test-Path $oldAndroidDir) {" ^
+    "  New-Item -ItemType Directory -Force -Path $newAndroidDir | Out-Null;" ^
+    "  Move-Item -Path \"$oldAndroidDir/*\" -Destination $newAndroidDir -ErrorAction SilentlyContinue;" ^
+    "  Remove-Item -Recurse -Force $oldAndroidDir;" ^
+    "  $parent = Split-Path $oldAndroidDir -Parent;" ^
+    "  while ($parent -and $parent -ne 'sample/androidApp/src' -and $parent -ne 'sample/androidApp' -and (Test-Path $parent) -and (Get-ChildItem $parent).Count -eq 0) {" ^
+    "    Remove-Item $parent -Force;" ^
+    "    $parent = Split-Path $parent -Parent;" ^
+    "  }" ^
+    "}"
+
+echo Performing search-and-replace for package names & namespaces...
+powershell -Command ^
+    "Get-ChildItem -Path lib, sample -Recurse -Include *.kt, *.gradle.kts, *.xml | ForEach-Object {" ^
+    "  $content = Get-Content $_.FullName -Raw;" ^
+    "  $content = $content -replace 'package fiblib', 'package !GROUP_ID!.!PACKAGE_NAME!';" ^
+    "  $content = $content -replace 'import fiblib\.', 'import !GROUP_ID!.!PACKAGE_NAME!.';" ^
+    "  $content = $content -replace 'package sample\.app', 'package !GROUP_ID!.!PACKAGE_NAME!.sample';" ^
+    "  $content = $content -replace 'import sample\.app\.', 'import !GROUP_ID!.!PACKAGE_NAME!.sample\..';" ^
+    "  $content = $content -replace 'package sample\.app\.android', 'package !GROUP_ID!.!PACKAGE_NAME!.android';" ^
+    "  $content = $content -replace 'import sample\.app\.android\.', 'import !GROUP_ID!.!PACKAGE_NAME!.android\..';" ^
+    "  $content = $content -replace 'namespace = \"sample\.app\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!.sample\"';" ^
+    "  $content = $content -replace 'namespace = \"sample\.app\.android\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!.android\"';" ^
+    "  $content = $content -replace 'applicationId = \"sample\.app\"', 'applicationId = \"!GROUP_ID!.!PACKAGE_NAME!.sample\"';" ^
+    "  Set-Content $_.FullName $content;" ^
+    "}"
 
 REM Create README in new package directory
 (
@@ -210,26 +271,17 @@ echo This is your library's main package: `!GROUP_ID!.!PACKAGE_NAME!`
 echo.
 echo ## Getting Started
 echo.
-echo Add your library code in this directory. The example `fiblib` package is kept as a reference - you can delete it when you're ready.
+echo Add your library code in this directory.
 echo.
 echo ## Package Structure
 echo.
 echo ```
 echo lib/src/
 echo ├── commonMain/kotlin/
-echo │   ├── !PACKAGE_PATH!/          # Your library code ^(THIS DIRECTORY^)
-echo │   └── fiblib/                  # Example code ^(can be deleted^)
+echo │   └── !PACKAGE_PATH!/          # Your library code ^(THIS DIRECTORY^)
 echo └── commonTest/kotlin/
-echo     ├── !PACKAGE_PATH!/          # Your tests
-echo     └── fiblib/                  # Example tests ^(can be deleted^)
+echo     └── !PACKAGE_PATH!/          # Your tests
 echo ```
-echo.
-echo ## Next Steps
-echo.
-echo 1. Add your library code here
-echo 2. Update the sample app to use your library
-echo 3. Delete the `fiblib` example when ready
-echo 4. Write tests in `lib/src/commonTest/kotlin/!PACKAGE_PATH!/`
 ) > "lib\src\commonMain\kotlin\!PACKAGE_PATH!\README.md"
 
 echo [OK] Created package structure with README
@@ -241,14 +293,14 @@ echo ============================================================
 echo.
 echo What's next?
 echo.
-echo 1. Your new package is ready at:
+echo 1. Your new library package is ready at:
 echo    lib/src/commonMain/kotlin/!PACKAGE_PATH!/
 echo.
-echo 2. The example 'fiblib' code is still available for reference
-echo    You can delete it when you're ready
+echo 2. Your sample compose app package is ready at:
+echo    sample/composeApp/src/commonMain/kotlin/!GROUP_ID!.!PACKAGE_NAME!.sample (slash separated)
 echo.
-echo 3. Update the sample app to use your library:
-echo    sample/composeApp/src/commonMain/kotlin/sample/app/App.kt
+echo 3. Your sample android app package is ready at:
+echo    sample/androidApp/src/main/kotlin/!GROUP_ID!.!PACKAGE_NAME!.android (slash separated)
 echo.
 echo 4. Commit your changes:
 echo    git add .

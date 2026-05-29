@@ -181,11 +181,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Build debug APK
-        run: ./gradlew :sample:composeApp:assembleDebug
+        run: ./gradlew :sample:androidApp:assembleDebug
       - name: Prepare APK artifact
         run: |
           mkdir -p ${{ github.workspace }}/e2e-artifacts
-          APK_SRC=$(find sample/composeApp/build/outputs/apk -type f -name '*.apk' | head -n1)
+          APK_SRC=$(find sample/androidApp/build/outputs/apk -type f -name '*.apk' | head -n1)
           if [ -n "$APK_SRC" ]; then
             cp "$APK_SRC" "${{ github.workspace }}/e2e-artifacts/sample-app-android-unsigned.apk"
             echo "APK prepared: sample-app-android-unsigned.apk"

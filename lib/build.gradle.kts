@@ -1,6 +1,5 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -21,6 +20,9 @@ kotlin {
     compileSdk = 35
     minSdk = 21
     withHostTest {  }
+    androidResources {
+      enable = true
+    }
   }
   jvm()
   wasmJs { browser() }
@@ -30,9 +32,13 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(compose.runtime)
-      implementation(compose.ui)
-      implementation(compose.foundation)
+      implementation(libs.compose.runtime)
+      implementation(libs.compose.ui)
+      implementation(libs.compose.foundation)
+      // GUARDRAIL: Do NOT introduce host-specific dependencies (such as compose.desktop.currentOs)
+      // here or in any published target. Doing so leaks host-specific Gradle dependency metadata
+      // into the POM file published to Maven Central, breaking builds for consumers on other platforms.
+      // Use platform-neutral/agnostic dependencies instead.
     }
 
     commonTest.dependencies {
@@ -69,7 +75,11 @@ dependencies {
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
   publishToMavenCentral()
-  coordinates("io.github.aryapreetam", "fiblib", "0.0.3")
+  coordinates(
+    project.group.toString(),
+    findProperty("libArtifactId")?.toString() ?: "fiblib",
+    project.version.toString()
+  )
 
   pom {
     name = "Fibonacci Library"

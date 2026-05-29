@@ -9,3 +9,9 @@ plugins {
 
 // Apply template setup check
 apply(from = "gradle/check-template-setup.gradle.kts")
+
+allprojects {
+  group = findProperty("libGroup") ?: "io.github.aryapreetam"
+  version = findProperty("libVersion") ?: "0.0.1"
+}
+
