@@ -123,12 +123,12 @@ jobs:
 
   # Build DMGs on macOS runners
   build-macos:
-    name: Build sample DMG artifacts (macOS variants)
+    name: Build sample DMG artifacts (${{ matrix.arch }})
     strategy:
       fail-fast: true
       matrix:
-        mac-arch: [ macos-13, macos-latest ]
-    runs-on: ${{ matrix.mac-arch }}
+        arch: [ x64, aarch64 ]
+    runs-on: macos-latest
     needs: [ ci ]
     steps:
       - name: Checkout repository
@@ -146,6 +146,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
+          architecture: ${{ matrix.arch }}
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Cache Kotlin/Native (~/.konan)
@@ -157,14 +158,14 @@ jobs:
       - name: Grant Gradlew execute permission
         run: chmod +x gradlew
       - name: Accept Android SDK licenses
-        if: matrix.mac-arch == 'macos-latest'
+        if: matrix.arch == 'aarch64'
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
       - name: Build Desktop DMG
         run: ./gradlew :sample:composeApp:packageDmg
       - name: Collect DMG artifacts
         run: |
           mkdir -p $GITHUB_WORKSPACE/release-upload
-          if [[ "${{ matrix.mac-arch }}" == "macos-13" ]]; then ARCH_SUFFIX="x64"; else ARCH_SUFFIX="arm64"; fi
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then ARCH_SUFFIX="x64"; else ARCH_SUFFIX="arm64"; fi
           DMG_SRC=$(find sample/composeApp/build/compose/binaries -type f -name '*.dmg' | head -n1)
           if [ -n "$DMG_SRC" ]; then
             cp "$DMG_SRC" "$GITHUB_WORKSPACE/release-upload/sample-app-desktop-$ARCH_SUFFIX.dmg"
@@ -176,10 +177,10 @@ jobs:
             codesign --force --sign - --timestamp=none "$APP_DIR" || true
             codesign --verify --deep --strict "$APP_DIR" || true
           fi
-      - name: Upload artifacts (macOS ${{ matrix.mac-arch }})
+      - name: Upload artifacts (macOS ${{ matrix.arch }})
         uses: actions/upload-artifact@v4
         with:
-          name: release-upload-${{ matrix.mac-arch }}
+          name: release-upload-macos-${{ matrix.arch }}
           path: ${{ github.workspace }}/release-upload/*
           compression-level: 1
 
@@ -302,16 +303,16 @@ jobs:
         with:
           name: release-upload-linux
           path: artifacts/linux
-      - name: Download macos-13 artifacts
+      - name: Download macos-x64 artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-upload-macos-13
-          path: artifacts/macos-13
-      - name: Download macos-latest artifacts
+          name: release-upload-macos-x64
+          path: artifacts/macos-x64
+      - name: Download macos-aarch64 artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-upload-macos-latest
-          path: artifacts/macos-latest
+          name: release-upload-macos-aarch64
+          path: artifacts/macos-aarch64
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
@@ -335,8 +336,8 @@ jobs:
           prerelease: ${{ steps.pre.outputs.is_pre }}
           files: |
             artifacts/linux/sample-app-android-unsigned.apk
-            artifacts/macos-13/sample-app-desktop-*.dmg
-            artifacts/macos-latest/sample-app-desktop-*.dmg
+            artifacts/macos-x64/sample-app-desktop-*.dmg
+            artifacts/macos-aarch64/sample-app-desktop-*.dmg
             artifacts/windows/sample-app-windows.msi
             artifacts/linux/sample-app-wasm.zip
             artifacts/ios/sample-app-ios-simulator.zip
