@@ -84,15 +84,18 @@ jobs:
       - name: Accept Android SDK licenses
         if: steps.check-apk.outputs.exists == 'false'
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-      - name: Build APK and wasm
+      - name: Build APK, wasm and Linux DEB
         if: steps.check-apk.outputs.exists == 'false'
         run: |
           ./gradlew :sample:androidApp:assembleRelease
           ./gradlew :sample:composeApp:wasmJsBrowserDistribution
-      - name: Build wasm only (APK reused)
+          ./gradlew :sample:composeApp:packageDeb
+      - name: Build wasm and Linux DEB only (APK reused)
         if: steps.check-apk.outputs.exists == 'true'
-        run: ./gradlew :sample:composeApp:wasmJsBrowserDistribution
-      - name: Collect artifacts (APK + wasm)
+        run: |
+          ./gradlew :sample:composeApp:wasmJsBrowserDistribution
+          ./gradlew :sample:composeApp:packageDeb
+      - name: Collect artifacts (APK, wasm, and DEB)
         run: |
           mkdir -p $GITHUB_WORKSPACE/release-upload
           
@@ -112,6 +115,12 @@ jobs:
           WASM_DIR="$GITHUB_WORKSPACE/sample/composeApp/build/dist/wasmJs/productionExecutable"
           if [ -d "$WASM_DIR" ]; then
             (cd "$WASM_DIR" && zip -r "$GITHUB_WORKSPACE/release-upload/sample-app-wasm.zip" ./*)
+          fi
+          
+          # Collect Linux DEB
+          DEB_SRC=$(find sample/composeApp/build/compose/binaries -type f -name '*.deb' | head -n1)
+          if [ -n "$DEB_SRC" ]; then
+            cp "$DEB_SRC" "$GITHUB_WORKSPACE/release-upload/sample-app-linux.deb"
           fi
       - name: Upload artifacts (Linux)
         uses: actions/upload-artifact@v4
@@ -341,6 +350,7 @@ jobs:
             artifacts/windows/sample-app-windows.msi
             artifacts/linux/sample-app-wasm.zip
             artifacts/ios/sample-app-ios-simulator.zip
+            artifacts/linux/sample-app-linux.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

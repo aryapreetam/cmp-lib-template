@@ -131,6 +131,7 @@ Download and try the sample app on your platform without building from source:
 | 🍏 **macOS (Intel)** | [![Download](https://img.shields.io/badge/Download--Mac--x64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-x64.dmg) |
 | 🍎 **macOS (Apple Silicon)** | [![Download](https://img.shields.io/badge/Download--Mac--arm64--DMG-blue?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-desktop-arm64.dmg) |
 | 🪟 **Windows** | [![Download](https://img.shields.io/badge/Download--Windows--MSI-0078D4?style=for-the-badge&logo=windows)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-windows.msi) |
+| 🐧 **Linux** | [![Download](https://img.shields.io/badge/Download--Linux--DEB-E95420?style=for-the-badge&logo=ubuntu)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-linux.deb) |
 | 🤖 **Android** | [![Download](https://img.shields.io/badge/Download--Android--APK-green?style=for-the-badge&logo=android)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-android-unsigned.apk) |
 | 🌐 **Web (Wasm)** | [![Download](https://img.shields.io/badge/Download--Web--Wasm--zip-purple?style=for-the-badge)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-wasm.zip) |
 |  **iOS Simulator** | [![Download](https://img.shields.io/badge/Download--iOS--Simulator--zip-orange?style=for-the-badge&logo=apple)](https://github.com/aryapreetam/cmp-lib-template/releases/latest/download/sample-app-ios-simulator.zip) |
@@ -167,18 +168,27 @@ adb install sample-app-android-unsigned.apk
 #### 🍎 macOS
 - Download the DMG for your Mac architecture (Intel or Apple Silicon)
 - Open (mount) the DMG and drag the app to your Applications folder (or Desktop)
-- **When you try to open the app for the first time, you may see a Gatekeeper warning:**
+- **When you try to open the app for the first time, macOS Gatekeeper will block it since it is an open-source build signed ad-hoc (not using a paid Apple Developer account). Follow these 6 sequential steps to allow running the app:**
 
-  <p align="center">
-    <img src="readme_images/desktop_app_run.png" alt="Gatekeeper dialog" width="380" />
-    <br/>
-    <sub>Mac Gatekeeper dialog when opening the app for the first time</sub>
-  </p>
+  <table width="100%">
+    <tr>
+      <td align="center" valign="top"><strong>1. Block Alert Dialog</strong><br/><br/><img src="readme_images/mac_app_run1.png" alt="mac_app_run1" width="220"/></td>
+      <td align="center" valign="top"><strong>2. Open System Settings</strong><br/><br/><img src="readme_images/mac_app_run2.png" alt="mac_app_run2" width="220"/></td>
+      <td align="center" valign="top"><strong>3. Privacy & Security Section</strong><br/><br/><img src="readme_images/mac_app_run3.png" alt="mac_app_run3" width="220"/></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top"><strong>4. Click "Open Anyway"</strong><br/><br/><img src="readme_images/mac_app_run4.png" alt="mac_app_run4" width="220"/></td>
+      <td align="center" valign="top"><strong>5. Authenticate Security Dialog</strong><br/><br/><img src="readme_images/mac_app_run5.png" alt="mac_app_run5" width="220"/></td>
+      <td align="center" valign="top"><strong>6. Click "Open" to Launch</strong><br/><br/><img src="readme_images/mac_app_run6.png" alt="mac_app_run6" width="220"/></td>
+    </tr>
+  </table>
 
 - To allow running the app:
-     1. **Right-click (control-click) the app and select "Open".**
-     2. In the dialog, click "Open". (If there is a question mark in the corner, you can click it for more info.)
-     3. The app will start. This is safe for open-source/test builds.
+     1. Double-click the app. If blocked, open macOS **System Settings** (or System Preferences).
+     2. Navigate to **Privacy & Security** and scroll down to the **Security** section.
+     3. You will see a notice stating: *"sample was blocked from use because it is not from an identified developer"*.
+     4. Click **"Open Anyway"** and authenticate with your user password or Touch ID.
+     5. Re-open the app and click **"Open"** on the confirmation dialog. The app will now launch safely!
 
 > This is a normal security step for all open-source and CI-generated Mac executables. Apps are signed ad-hoc for internal/dev use, not with a public Apple developer ID.
 
@@ -189,6 +199,14 @@ adb install sample-app-android-unsigned.apk
 - Follow the installation wizard
 - Launch the app from the Start menu
 
+#### 🐧 Linux
+- Download the `.deb` file
+- Double-click the file to open it in your software manager and click "Install", OR run:
+  ```bash
+  sudo dpkg -i sample-app-linux.deb
+  ```
+- Launch the application from your desktop launcher or run `sample` in the terminal!
+
 ---
 
 ## 🚀 What This Template Provides
@@ -198,7 +216,7 @@ This template automatically generates and deploys three key resources for your l
 | Resource | Description | Preview |
 |----------|-------------|---------|
 | 📚 **Library Homepage** | Your README becomes a beautiful landing page with Docsify | <img src="readme_images/site-for-the-lib.png" alt="Library homepage" width="250" /> |
-| 📖 **API Documentation** | Automatically generated Dokka docs with improved UI (2.1.0-Beta) | <img src="readme_images/ste-for-api-doc.png" alt="API docs" width="250" /> |
+| 📖 **API Documentation** | Automatically generated Dokka docs with improved UI (2.2.0) | <img src="readme_images/ste-for-api-doc.png" alt="API docs" width="250" /> |
 | 🌐 **Live Wasm Demo** | Interactive browser demo of your sample app | <img src="readme_images/wasm-demo.png" alt="Wasm demo" width="250" /> |
 
 All three are automatically deployed to GitHub Pages:
@@ -222,16 +240,7 @@ You can also run Gradle tasks in the terminal:
 - **iOS:** Open `sample/iosApp/iosApp.xcodeproj` in Xcode and run the sample app
 - **Wasm:** `./gradlew :sample:composeApp:wasmJsBrowserRun`
 
----
 
-## Dokka UI comparison
-
-The API documentation appearance has improved with Dokka 2.1.0-Beta. Below is a quick visual comparison.
-
-| Dokka (2.0.0)                                           | Dokka (2.1.0-Beta)                                    |
-|---------------------------------------------------------|-------------------------------------------------------|
-| ![API index old](readme_images/api-doc-index-old.png)   | ![API index new](readme_images/api-doc-index-new.png) |
-| ![Function doc new](readme_images/function-doc-old.png) | ![Function doc old](readme_images/function-doc-new.png) |
 
 
 ## CI/CD overview
@@ -242,7 +251,7 @@ This repo ships with an opinionated CI/CD that builds, tests, packages, releases
 flowchart TD
     A["Lint"] --> B["Build & Test - Library + Sample (all targets)"]
     B --> C["Android UI tests (emulator) & Maestro E2E tests(iOS & Android)"]
-    C --> D["Build artifacts - all targets APK • DMG • iOS Simulator zip • wasm bundle"]
+    C --> D["Build artifacts - APK • DMG (Intel/Apple Silicon) • MSI • DEB • iOS Simulator zip • wasm bundle"]
     D --> E["Create GitHub Release and upload artifacts"]
     E --> F["Publish to Maven Central"]
     E --> G["Deploy GitHub Pages README site (Docsify) + wasm demo + API docs"]
