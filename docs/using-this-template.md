@@ -385,9 +385,9 @@ fun App() {
 ./gradlew test
 
 # Test on specific platforms
-./gradlew :lib:jvmTest
-./gradlew :lib:iosSimulatorArm64Test
-./gradlew :lib:wasmJsBrowserTest
+./gradlew :library-module:jvmTest
+./gradlew :library-module:iosSimulatorArm64Test
+./gradlew :library-module:wasmJsBrowserTest
 ```
 
 ### 8.2 Test Sample Apps
@@ -407,7 +407,7 @@ fun App() {
 
 ```bash
 # Publish to Maven Local
-./gradlew :lib:publishToMavenLocal
+./gradlew :library-module:publishToMavenLocal
 
 # Check it exists
 ls ~/.m2/repository/io/github/yourname/yourlibname/

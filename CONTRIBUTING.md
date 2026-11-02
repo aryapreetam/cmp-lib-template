@@ -12,7 +12,7 @@ cmp-lib-template/
 │   ├── ci.yml             # Reusable CI (lint, tests, build)
 │   ├── push-ci.yml        # Runs on every push/PR
 │   └── release.yml        # Runs on version tags (v*)
-├── lib/                   # The actual library code
+├── library-module/                   # The actual library code
 │   ├── src/
 │   │   ├── commonMain/    # Shared Kotlin code
 │   │   └── commonTest/    # Shared tests
@@ -55,10 +55,10 @@ cmp-lib-template/
    ./gradlew test
    
    # Platform-specific tests
-   ./gradlew :lib:jvmTest
-   ./gradlew :lib:iosSimulatorArm64Test
-   ./gradlew :lib:wasmJsBrowserTest
-   ./gradlew :lib:testDebugUnitTest  # Android unit tests
+   ./gradlew :library-module:jvmTest
+   ./gradlew :library-module:iosSimulatorArm64Test
+   ./gradlew :library-module:wasmJsBrowserTest
+   ./gradlew :library-module:testDebugUnitTest  # Android unit tests
    ```
 
 ---
@@ -67,15 +67,15 @@ cmp-lib-template/
 
 ### Working on the Library
 
-1. Make changes in `lib/src/commonMain/kotlin/`
-2. Write tests in `lib/src/commonTest/kotlin/`
-3. Run tests: `./gradlew :lib:test`
+1. Make changes in `library-module/src/commonMain/kotlin/`
+2. Write tests in `library-module/src/commonTest/kotlin/`
+3. Run tests: `./gradlew :library-module:test`
 4. Check code style: `./gradlew lintRelease`
 
 ### Testing Changes in Sample App
 
-1. Make changes in `lib/`
-2. The sample app automatically uses the local library via `implementation(project(":lib"))`
+1. Make changes in `library-module/`
+2. The sample app automatically uses the local library via `implementation(project(":library-module"))`
 3. Run the sample app on your target platform:
 
    **Android:**
@@ -106,7 +106,7 @@ cmp-lib-template/
 Test your library locally before publishing to Maven Central:
 
 ```bash
-./gradlew :lib:publishToMavenLocal
+./gradlew :library-module:publishToMavenLocal
 ```
 
 Then in another project, add:
@@ -171,7 +171,7 @@ dependencies {
 
 ### Release Process
 
-1. **Update version in `lib/build.gradle.kts`**
+1. **Update version in `library-module/build.gradle.kts`**
    ```kotlin
    coordinates("io.github.aryapreetam", "fiblib", "0.0.4") // Bump this
    ```
@@ -210,10 +210,10 @@ dependencies {
 ./gradlew test
 
 # Specific platforms
-./gradlew :lib:jvmTest
-./gradlew :lib:iosSimulatorArm64Test
-./gradlew :lib:wasmJsBrowserTest
-./gradlew :lib:testDebugUnitTest  # Android
+./gradlew :library-module:jvmTest
+./gradlew :library-module:iosSimulatorArm64Test
+./gradlew :library-module:wasmJsBrowserTest
+./gradlew :library-module:testDebugUnitTest  # Android
 ```
 
 ### UI Tests
@@ -235,7 +235,7 @@ dependencies {
 
 ### Adding a New Platform (e.g., tvOS)
 
-1. **Add target in `lib/build.gradle.kts`**
+1. **Add target in `library-module/build.gradle.kts`**
    ```kotlin
    kotlin {
      // ...existing targets...
@@ -259,7 +259,7 @@ dependencies {
 
 4. **Test locally**
    ```bash
-   ./gradlew :lib:tvosSimulatorArm64Test
+   ./gradlew :library-module:tvosSimulatorArm64Test
    ```
 
 ---
@@ -272,9 +272,9 @@ API documentation is generated automatically via Dokka:
 
 ```bash
 # Generate locally
-./gradlew :lib:dokkaGeneratePublicationHtml
+./gradlew :library-module:dokkaGeneratePublicationHtml
 
-# View at: lib/build/dokka/html/index.html
+# View at: library-module/build/dokka/html/index.html
 ```
 
 On release, docs are automatically published to: `https://yourusername.github.io/repo-name/api/`
@@ -289,7 +289,7 @@ Edit `README.MD` - it's automatically converted to the homepage via Docsify.
 
 ### Common Issues
 
-**Issue: "Task :lib:signKotlinMultiplatformPublication not found"**
+**Issue: "Task :library-module:signKotlinMultiplatformPublication not found"**
 - Ensure GPG key is properly configured
 - Check `signing.keyId` is set (local) or `signingInMemoryKey` (CI)
 

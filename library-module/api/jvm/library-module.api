@@ -1,0 +1,4 @@
+public final class fiblib/FibonacciKt {
+	public static final fun getFibonacciNumbers (I)Ljava/util/List;
+}
+

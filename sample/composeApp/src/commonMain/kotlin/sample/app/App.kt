@@ -39,7 +39,10 @@ fun FibonacciGenerator() {
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
-    BasicText("Fibonacci Generator")
+    BasicText(
+      text = "Fibonacci Generator",
+      modifier = Modifier.testTag("app_title")
+    )
     BasicTextField(
       value = inputText,
       onValueChange = { newValue ->
@@ -60,6 +63,7 @@ fun FibonacciGenerator() {
         textAlign = TextAlign.Center
       ),
       modifier = Modifier
+        .testTag("number_input")
         .background(Color.White)
         .border(
           width = 1.dp,
@@ -86,6 +90,7 @@ fun FibonacciGenerator() {
       val text = if(inputText.text.toInt() == 1) "First fibonacci number" else "First ${inputText.text} fibonacci numbers"
       BasicText(
         text = "$text=${fibonacciNumbers.joinToString(", ")}",
+        modifier = Modifier.testTag("result_text")
       )
     }
   }

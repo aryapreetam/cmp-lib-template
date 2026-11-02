@@ -28,7 +28,7 @@ jobs:
   # Build APK and wasm on Ubuntu in parallel after all tests (lib+sample) succeed
   build-linux:
     name: Build Android APK and wasm (Ubuntu)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [ ci ]
     steps:
       - name: Checkout repository
@@ -74,7 +74,7 @@ jobs:
           node-version: '20'
       - name: Setup Android SDK
         if: steps.check-apk.outputs.exists == 'false'
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - name: Cache Kotlin JS Store
         uses: actions/cache@v4
         with:
@@ -377,7 +377,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Publish to MavenCentral
-        run: ./gradlew :lib:publishAndReleaseToMavenCentral --no-configuration-cache
+        run: ./gradlew :library-module:publishAndReleaseToMavenCentral --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
@@ -453,6 +453,13 @@ jobs:
             },
             plugins: [
               function(hook, vm) {
+                hook.afterEach(function(html, next) {
+                  var transformed = html.replace(
+                    /<a [^>]*href="([^"]+user-attachments\/assets\/[^"]+)"[^>]*>.*?<\/a>/g,
+                    '<video src="$1" controls autoplay loop muted playsinline width="100%" style="border-radius: 8px;"></video>'
+                  );
+                  next(transformed);
+                });
                 hook.doneEach(function() {
                   mermaid.run({
                     querySelector: '.mermaid'
@@ -493,7 +500,7 @@ jobs:
 
       # API docs (Dokka) into site/api
       - name: Generate API Docs (Dokka)
-        run: ./gradlew :lib:dokkaGeneratePublicationHtml --stacktrace --warning-mode=all
+        run: ./gradlew :library-module:dokkaGeneratePublicationHtml --stacktrace --warning-mode=all
       - name: Prepare API Docs Folder
         run: |
           mkdir -p site/api

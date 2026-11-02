@@ -108,6 +108,20 @@ DEFAULT_VERSION="0.0.1"
 read -p "Initial version [${DEFAULT_VERSION}]: " VERSION
 VERSION=${VERSION:-$DEFAULT_VERSION}
 
+# Ask to keep example code
+echo ""
+echo -e "${GREEN}Would you like to keep the 'fiblib' Fibonacci example code and tests for reference?${NC}"
+echo "  y - Keep example code & tests (migrates them to your new package namespace)"
+echo "  n - Delete example code & tests completely (recommended for a clean setup)"
+read -p "Keep example code? (y/n) [y]: " KEEP_EXAMPLE
+KEEP_EXAMPLE=${KEEP_EXAMPLE:-y}
+
+if [ "$KEEP_EXAMPLE" = "n" ] || [ "$KEEP_EXAMPLE" = "N" ]; then
+  KEEP_EXAMPLE_BOOL=false
+else
+  KEEP_EXAMPLE_BOOL=true
+fi
+
 # Generate package name (remove hyphens and special chars, lowercase)
 PACKAGE_NAME=$(echo "$ARTIFACT_NAME" | tr -d '-' | tr '[:upper:]' '[:lower:]')
 PACKAGE_PATH=$(echo "$GROUP_ID" | tr '.' '/')/$PACKAGE_NAME
@@ -123,6 +137,7 @@ echo "GitHub org:           $GITHUB_ORG"
 echo "Maven group ID:       $GROUP_ID"
 echo "Developer name:       $DEVELOPER_NAME"
 echo "Library description:  $LIBRARY_DESCRIPTION"
+echo "Keep example code:    $KEEP_EXAMPLE"
 echo "Package name:         $GROUP_ID.$PACKAGE_NAME"
 echo "Package path:         $PACKAGE_PATH"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
@@ -151,7 +166,8 @@ cat > "$CONFIG_FILE" << EOF
   "library_description": "$LIBRARY_DESCRIPTION",
   "package_name": "$GROUP_ID.$PACKAGE_NAME",
   "package_path": "$PACKAGE_PATH",
-  "version": "$VERSION"
+  "version": "$VERSION",
+  "keep_example": $KEEP_EXAMPLE_BOOL
 }
 EOF
 
@@ -170,7 +186,8 @@ OLD_VERSION="0.0.3"
 
 # Replace in settings.gradle.kts
 echo -e "${GREEN}✓${NC} Updating settings.gradle.kts..."
-sed -i.bak "s/rootProject.name = \"$OLD_REPO\"/rootProject.name = \"$REPO_NAME\"/" settings.gradle.kts
+sed -i.bak "s/rootProject.name = \"$OLD_REPO\"/rootProject.name = \"$REPO_NAME-root\"/" settings.gradle.kts
+sed -i.bak "s/include(\":library-module\")/include(\":$ARTIFACT_NAME\")/" settings.gradle.kts
 rm -f settings.gradle.kts.bak
 
 # Replace in gradle.properties
@@ -180,16 +197,25 @@ sed -i.bak "s|libArtifactId=fiblib|libArtifactId=$ARTIFACT_NAME|" gradle.propert
 sed -i.bak "s|libVersion=0.0.4|libVersion=$VERSION|" gradle.properties
 rm -f gradle.properties.bak
 
-# Replace in lib/build.gradle.kts
-echo -e "${GREEN}✓${NC} Updating lib/build.gradle.kts..."
-sed -i.bak "s|namespace = \"$OLD_NAMESPACE\"|namespace = \"$GROUP_ID.$PACKAGE_NAME\"|" lib/build.gradle.kts
-sed -i.bak "s|name = \"$OLD_LIB_NAME\"|name = \"$LIBRARY_NAME\"|" lib/build.gradle.kts
-sed -i.bak "s|description = \"$OLD_DESCRIPTION\"|description = \"$LIBRARY_DESCRIPTION\"|" lib/build.gradle.kts
-sed -i.bak "s|url = \"https://$OLD_ORG.github.io/$OLD_REPO\"|url = \"https://$GITHUB_ORG.github.io/$REPO_NAME\"|" lib/build.gradle.kts
-sed -i.bak "s|id = \"$OLD_ORG\"|id = \"$GITHUB_ORG\"|" lib/build.gradle.kts
-sed -i.bak "s|name = \"$OLD_DEVELOPER\"|name = \"$DEVELOPER_NAME\"|" lib/build.gradle.kts
-sed -i.bak "s|url = \"https://github.com/$OLD_ORG/$OLD_REPO\"|url = \"https://github.com/$GITHUB_ORG/$REPO_NAME\"|" lib/build.gradle.kts
-rm -f lib/build.gradle.kts.bak
+# Replace in library-module/build.gradle.kts
+echo -e "${GREEN}✓${NC} Updating library build file..."
+sed -i.bak "s|namespace = \"$OLD_NAMESPACE\"|namespace = \"$GROUP_ID.$PACKAGE_NAME\"|" library-module/build.gradle.kts
+sed -i.bak "s|name = \"$OLD_LIB_NAME\"|name = \"$LIBRARY_NAME\"|" library-module/build.gradle.kts
+sed -i.bak "s|description = \"$OLD_DESCRIPTION\"|description = \"$LIBRARY_DESCRIPTION\"|" library-module/build.gradle.kts
+sed -i.bak "s|url = \"https://$OLD_ORG.github.io/$OLD_REPO\"|url = \"https://$GITHUB_ORG.github.io/$REPO_NAME\"|" library-module/build.gradle.kts
+sed -i.bak "s|id = \"$OLD_ORG\"|id = \"$GITHUB_ORG\"|" library-module/build.gradle.kts
+sed -i.bak "s|name = \"$OLD_DEVELOPER\"|name = \"$DEVELOPER_NAME\"|" library-module/build.gradle.kts
+sed -i.bak "s|url = \"https://github.com/$OLD_ORG/$OLD_REPO\"|url = \"https://github.com/$GITHUB_ORG/$REPO_NAME\"|" library-module/build.gradle.kts
+rm -f library-module/build.gradle.kts.bak
+
+# Replace in sample/composeApp/build.gradle.kts
+echo -e "${GREEN}✓${NC} Updating sample app build file..."
+sed -i.bak "s|implementation(project(\":library-module\"))|implementation(project(\":$ARTIFACT_NAME\"))|" sample/composeApp/build.gradle.kts
+rm -f sample/composeApp/build.gradle.kts.bak
+
+# Physically rename directory library-module to $ARTIFACT_NAME
+echo -e "${GREEN}✓${NC} Renaming library module directory to $ARTIFACT_NAME..."
+mv library-module "$ARTIFACT_NAME"
 
 # Replace in CONTRIBUTING.md
 echo -e "${GREEN}✓${NC} Updating CONTRIBUTING.md..."
@@ -222,24 +248,168 @@ echo -e "${GREEN}✓${NC} Updating .github/workflows/release.yml..."
 sed -i.bak "s|name: '$OLD_REPO'|name: '$REPO_NAME'|g" .github/workflows/release.yml
 sed -i.bak "s|repo: 'https://github.com/$OLD_ORG/$OLD_REPO'|repo: 'https://github.com/$GITHUB_ORG/$REPO_NAME'|g" .github/workflows/release.yml
 sed -i.bak "s|<title>Compose Multiplatform Library Template</title>|<title>$REPO_NAME</title>|g" .github/workflows/release.yml
+sed -i.bak "s|:library-module:|:$ARTIFACT_NAME:|g" .github/workflows/release.yml
+sed -i.bak "s|library-module/build/dokka|$ARTIFACT_NAME/build/dokka|g" .github/workflows/release.yml
+sed -i.bak "s|library-module/build/|$ARTIFACT_NAME/build/|g" .github/workflows/release.yml
 rm -f .github/workflows/release.yml.bak
+
+# Update push-ci.yml to remove skipped jobs and clean up triggers
+echo -e "${GREEN}✓${NC} Optimizing and customizing .github/workflows/push-ci.yml..."
+cat > .github/workflows/push-ci.yml << EOF
+name: CI (push & PR)
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - 'v*'
+    paths:
+      # Run CI only when these files/directories change
+      - '$ARTIFACT_NAME/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+  pull_request:
+    paths:
+      # Same path filters for PRs
+      - '$ARTIFACT_NAME/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Reuse CI (lint, build+tests, android UI)
+    uses: ./.github/workflows/ci.yml
+EOF
+
+# Update ci.yml to point to the renamed module
+echo -e "${GREEN}✓${NC} Optimizing .github/workflows/ci.yml..."
+sed -i.bak "s|:library-module:|:$ARTIFACT_NAME:|g" .github/workflows/ci.yml
+rm -f .github/workflows/ci.yml.bak
 
 # Create new package directory structure and migrate files
 echo -e "${GREEN}✓${NC} Migrating package structure..."
 
 # 1. Migrate core library package
-NEW_LIB_PATH="lib/src/commonMain/kotlin/$PACKAGE_PATH"
-NEW_LIB_TEST_PATH="lib/src/commonTest/kotlin/$PACKAGE_PATH"
+NEW_LIB_PATH="$ARTIFACT_NAME/src/commonMain/kotlin/$PACKAGE_PATH"
+NEW_LIB_TEST_PATH="$ARTIFACT_NAME/src/commonTest/kotlin/$PACKAGE_PATH"
 mkdir -p "$NEW_LIB_PATH"
 mkdir -p "$NEW_LIB_TEST_PATH"
 
-if [ -d "lib/src/commonMain/kotlin/fiblib" ]; then
-  mv lib/src/commonMain/kotlin/fiblib/* "$NEW_LIB_PATH/" 2>/dev/null || true
-  rm -rf lib/src/commonMain/kotlin/fiblib
-fi
-if [ -d "lib/src/commonTest/kotlin/fiblib" ]; then
-  mv lib/src/commonTest/kotlin/fiblib/* "$NEW_LIB_TEST_PATH/" 2>/dev/null || true
-  rm -rf lib/src/commonTest/kotlin/fiblib
+if [ "$KEEP_EXAMPLE_BOOL" = "false" ]; then
+  echo -e "${GREEN}✓${NC} Removing Fibonacci examples and setting up clean standalone sample app..."
+  
+  # Overwrite App.kt
+  cat > "sample/composeApp/src/commonMain/kotlin/sample/app/App.kt" << 'EOF'
+package sample.app
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@Composable
+fun App() {
+  Box(
+    modifier = Modifier.fillMaxSize().background(Color.White),
+    contentAlignment = Alignment.Center
+  ) {
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      BasicText(
+        text = "Welcome to your new Compose Multiplatform Library!",
+        style = TextStyle(
+          fontSize = 20.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.Black
+        )
+      )
+      BasicText(
+        text = "Edit App.kt to build a sample application for your library.",
+        style = TextStyle(
+          fontSize = 14.sp,
+          color = Color.Gray
+        )
+      )
+    }
+  }
+}
+EOF
+
+  # Overwrite SampleUiTest.kt
+  cat > "sample/composeApp/src/commonTest/kotlin/sample/app/SampleUiTest.kt" << 'EOF'
+package sample.app
+
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.runComposeUiTest
+import kotlin.test.Test
+
+class SampleUITest {
+
+  @OptIn(ExperimentalTestApi::class)
+  @Test
+  fun sampleUiTest() = runComposeUiTest {
+    setContent { App() }
+    onNodeWithText("Welcome to your new Compose Multiplatform Library!").assertExists()
+  }
+}
+EOF
+
+  cat > "sample/composeApp/src/commonTest/kotlin/sample/app/SampleIntegrationTest.kt" << 'EOF'
+package sample.app
+
+import io.github.aryapreetam.parikshan.E2ETestLifecycle
+import io.github.aryapreetam.parikshan.e2eTest
+import kotlin.test.Test
+
+class SampleIntegrationTest : E2ETestLifecycle {
+
+  @Test
+  fun sampleIntegrationTest() = e2eTest {
+    assertVisible("Welcome to your new Compose Multiplatform Library!")
+  }
+}
+EOF
+
+  # Delete fiblib example folders completely
+  rm -rf "$ARTIFACT_NAME/src/commonMain/kotlin/fiblib"
+  rm -rf "$ARTIFACT_NAME/src/commonTest/kotlin/fiblib"
+else
+  if [ -d "$ARTIFACT_NAME/src/commonMain/kotlin/fiblib" ]; then
+    mv $ARTIFACT_NAME/src/commonMain/kotlin/fiblib/* "$NEW_LIB_PATH/" 2>/dev/null || true
+    rm -rf $ARTIFACT_NAME/src/commonMain/kotlin/fiblib
+  fi
+  if [ -d "$ARTIFACT_NAME/src/commonTest/kotlin/fiblib" ]; then
+    mv $ARTIFACT_NAME/src/commonTest/kotlin/fiblib/* "$NEW_LIB_TEST_PATH/" 2>/dev/null || true
+    rm -rf $ARTIFACT_NAME/src/commonTest/kotlin/fiblib
+  fi
 fi
 
 # 2. Migrate composeApp package
@@ -271,10 +441,10 @@ if [ -d "$OLD_ANDROID_DIR" ]; then
   rmdir -p "sample/androidApp/src/main/kotlin/sample/app" 2>/dev/null || true
 fi
 
-# 4. Perform search-and-replace for package names and namespaces across all 3 modules
+# 4. Perform search-and-replace for package names and namespaces across all modules
 echo -e "${GREEN}✓${NC} Performing search-and-replace for package names & namespaces..."
 
-find lib sample -type f \( -name "*.kt" -o -name "*.gradle.kts" -o -name "*.xml" \) | while read -r file; do
+find "$ARTIFACT_NAME" sample -type f \( -name "*.kt" -o -name "*.gradle.kts" -o -name "*.xml" \) 2>/dev/null | while read -r file; do
   # Replace lib package
   sed -i.bak "s/package fiblib/package $GROUP_ID.$PACKAGE_NAME/g" "$file" 2>/dev/null || true
   sed -i.bak "s/import fiblib\./import $GROUP_ID.$PACKAGE_NAME./g" "$file" 2>/dev/null || true
@@ -295,8 +465,22 @@ find lib sample -type f \( -name "*.kt" -o -name "*.gradle.kts" -o -name "*.xml"
   rm -f "${file}.bak"
 done
 
+# 5. Update Binary Compatibility Validator baseline
+echo -e "${GREEN}✓${NC} Updating BCV baseline..."
+if [ -f "$ARTIFACT_NAME/api/jvm/library-module.api" ]; then
+  mv "$ARTIFACT_NAME/api/jvm/library-module.api" "$ARTIFACT_NAME/api/jvm/$ARTIFACT_NAME.api"
+fi
+rm -rf maestro-e2e 2>/dev/null || true
+
+# 6. Global Search and Replace in README.MD and CONTRIBUTING.md for lib paths
+sed -i.bak "s|:library-module:|:$ARTIFACT_NAME:|g" README.MD
+sed -i.bak "s|:library-module:|:$ARTIFACT_NAME:|g" CONTRIBUTING.md
+sed -i.bak "s|library-module/|$ARTIFACT_NAME/|g" README.MD
+sed -i.bak "s|library-module/|$ARTIFACT_NAME/|g" CONTRIBUTING.md
+rm -f README.MD.bak CONTRIBUTING.md.bak
+
 # Create README in new package directory
-cat > "lib/src/commonMain/kotlin/$PACKAGE_PATH/README.md" << EOF
+cat > "$ARTIFACT_NAME/src/commonMain/kotlin/$PACKAGE_PATH/README.md" << EOF
 # Your Library Code Goes Here
 
 This is your library's main package: \`$GROUP_ID.$PACKAGE_NAME\`
@@ -308,7 +492,7 @@ Add your library code in this directory.
 ## Package Structure
 
 \`\`\`
-lib/src/
+$ARTIFACT_NAME/src/
 ├── commonMain/kotlin/
 │   └── $PACKAGE_PATH/          # Your library code (THIS DIRECTORY)
 └── commonTest/kotlin/
@@ -326,7 +510,7 @@ echo ""
 echo -e "${BLUE}What's next?${NC}"
 echo ""
 echo "1. Your new library package is ready at:"
-echo -e "   ${YELLOW}lib/src/commonMain/kotlin/$PACKAGE_PATH/${NC}"
+echo -e "   ${YELLOW}$ARTIFACT_NAME/src/commonMain/kotlin/$PACKAGE_PATH/${NC}"
 echo ""
 echo "2. Your sample compose app package is ready at:"
 echo -e "   ${YELLOW}sample/composeApp/src/commonMain/kotlin/$SAMPLE_PACKAGE_PATH/${NC}"
@@ -340,4 +524,3 @@ echo -e "   ${YELLOW}git commit -m \"Configure template for $REPO_NAME\"${NC}"
 echo ""
 echo -e "${GREEN}Happy coding! 🎉${NC}"
 echo ""
-

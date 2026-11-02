@@ -105,6 +105,20 @@ set DEFAULT_VERSION=0.0.1
 set /p VERSION="Initial version [!DEFAULT_VERSION!]: "
 if "!VERSION!"=="" set VERSION=!DEFAULT_VERSION!
 
+REM Ask to keep example code
+echo.
+echo Would you like to keep the 'fiblib' Fibonacci example code and tests for reference?
+echo   y - Keep example code ^& tests ^(migrates them to your new package namespace^)
+echo   n - Delete example code ^& tests completely ^(recommended for a clean setup^)
+set /p KEEP_EXAMPLE="Keep example code? (y/n) [y]: "
+if "!KEEP_EXAMPLE!"=="" set KEEP_EXAMPLE=y
+
+if /i "!KEEP_EXAMPLE!"=="n" (
+    set KEEP_EXAMPLE_BOOL=false
+) else (
+    set KEEP_EXAMPLE_BOOL=true
+)
+
 REM Generate package name (remove hyphens and special chars, lowercase)
 set PACKAGE_NAME=!ARTIFACT_NAME:-=!
 REM Convert to lowercase
@@ -124,6 +138,7 @@ echo GitHub org:           !GITHUB_ORG!
 echo Maven group ID:       !GROUP_ID!
 echo Developer name:       !DEVELOPER_NAME!
 echo Library description:  !LIBRARY_DESCRIPTION!
+echo Keep example code:    !KEEP_EXAMPLE!
 echo Package name:         !GROUP_ID!.!PACKAGE_NAME!
 echo Package path:         !PACKAGE_PATH!
 echo ============================================================
@@ -152,7 +167,8 @@ echo   "developer_name": "!DEVELOPER_NAME!",
 echo   "library_description": "!LIBRARY_DESCRIPTION!",
 echo   "package_name": "!GROUP_ID!.!PACKAGE_NAME!",
 echo   "package_path": "!PACKAGE_PATH!",
-echo   "version": "!VERSION!"
+echo   "version": "!VERSION!",
+echo   "keep_example": !KEEP_EXAMPLE_BOOL!
 echo }
 ) > "%CONFIG_FILE%"
 
@@ -171,15 +187,23 @@ set OLD_VERSION=0.0.3
 
 REM Replace in settings.gradle.kts
 echo [OK] Updating settings.gradle.kts...
-powershell -Command "(Get-Content 'settings.gradle.kts') -replace 'rootProject.name = \"%OLD_REPO%\"', 'rootProject.name = \"!REPO_NAME!\"' | Set-Content 'settings.gradle.kts'"
+powershell -Command "(Get-Content 'settings.gradle.kts') -replace 'rootProject.name = \"%OLD_REPO%\"', 'rootProject.name = \"!REPO_NAME!-root\"' -replace 'include\(\":library-module\"\)', 'include(\":!ARTIFACT_NAME!\")' | Set-Content 'settings.gradle.kts'"
 
 REM Replace in gradle.properties
 echo [OK] Updating gradle.properties...
 powershell -Command "$content = Get-Content 'gradle.properties' -Raw; $content = $content -replace 'libGroup=io.github.aryapreetam', 'libGroup=!GROUP_ID!'; $content = $content -replace 'libArtifactId=fiblib', 'libArtifactId=!ARTIFACT_NAME!'; $content = $content -replace 'libVersion=0.0.4', 'libVersion=!VERSION!'; Set-Content 'gradle.properties' $content"
 
-REM Replace in lib/build.gradle.kts
-echo [OK] Updating lib/build.gradle.kts...
-powershell -Command "$content = Get-Content 'lib/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!LIBRARY_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'lib/build.gradle.kts' $content"
+REM Replace in library-module/build.gradle.kts
+echo [OK] Updating library build file...
+powershell -Command "$content = Get-Content 'library-module/build.gradle.kts' -Raw; $content = $content -replace 'namespace = \"%OLD_NAMESPACE%\"', 'namespace = \"!GROUP_ID!.!PACKAGE_NAME!\"'; $content = $content -replace 'name = \"%OLD_LIB_NAME%\"', 'name = \"!LIBRARY_NAME!\"'; $content = $content -replace 'description = \"%OLD_DESCRIPTION%\"', 'description = \"!LIBRARY_DESCRIPTION!\"'; $content = $content -replace 'url = \"https://%OLD_ORG%.github.io/%OLD_REPO%\"', 'url = \"https://!GITHUB_ORG!.github.io/!REPO_NAME!\"'; $content = $content -replace 'id = \"%OLD_ORG%\"', 'id = \"!GITHUB_ORG!\"'; $content = $content -replace 'name = \"%OLD_DEVELOPER%\"', 'name = \"!DEVELOPER_NAME!\"'; $content = $content -replace 'url = \"https://github.com/%OLD_ORG%/%OLD_REPO%\"', 'url = \"https://github.com/!GITHUB_ORG!/!REPO_NAME!\"'; Set-Content 'library-module/build.gradle.kts' $content"
+
+REM Replace in sample/composeApp/build.gradle.kts
+echo [OK] Updating sample app build file...
+powershell -Command "(Get-Content 'sample/composeApp/build.gradle.kts') -replace 'implementation\(project\(\":library-module\"\)\)', 'implementation(project(\":!ARTIFACT_NAME!\"))' | Set-Content 'sample/composeApp/build.gradle.kts'"
+
+REM Physically rename directory library-module to !ARTIFACT_NAME!
+echo [OK] Renaming library module directory to !ARTIFACT_NAME!...
+move library-module "!ARTIFACT_NAME!"
 
 REM Replace in CONTRIBUTING.md
 echo [OK] Updating CONTRIBUTING.md...
@@ -199,24 +223,162 @@ powershell -Command "(Get-Content 'LICENSE') -replace 'Copyright \(c\) 2025 %OLD
 
 REM Replace in .github/workflows/release.yml
 echo [OK] Updating .github/workflows/release.yml...
-powershell -Command "(Get-Content '.github/workflows/release.yml') -replace 'name: ''%OLD_REPO%''', 'name: ''!REPO_NAME!''' -replace 'repo: ''https://github.com/%OLD_ORG%/%OLD_REPO%''', 'repo: ''https://github.com/!GITHUB_ORG!/!REPO_NAME!''' -replace '<title>Compose Multiplatform Library Template</title>', '<title>!REPO_NAME!</title>' | Set-Content '.github/workflows/release.yml'"
+powershell -Command "(Get-Content '.github/workflows/release.yml') -replace 'name: ''%OLD_REPO%''', 'name: ''!REPO_NAME!''' -replace 'repo: ''https://github.com/%OLD_ORG%/%OLD_REPO%''', 'repo: ''https://github.com/!GITHUB_ORG!/!REPO_NAME!''' -replace '<title>Compose Multiplatform Library Template</title>', '<title>!REPO_NAME!</title>' -replace ':library-module:', ':!ARTIFACT_NAME!:' -replace 'library-module/build/dokka', '!ARTIFACT_NAME!/build/dokka' -replace 'library-module/build/', '!ARTIFACT_NAME!/build/' | Set-Content '.github/workflows/release.yml'"
 
-REM Migrate package structures and search-and-replace namespaces across all 3 modules
+REM Overwrite and optimize push-ci.yml
+echo [OK] Customizing and optimizing .github/workflows/push-ci.yml...
+powershell -Command "Set-Content '.github/workflows/push-ci.yml' @'
+name: CI (push & PR)
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - 'v*'
+    paths:
+      - '!ARTIFACT_NAME!/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+  pull_request:
+    paths:
+      - '!ARTIFACT_NAME!/**'
+      - 'sample/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/ci.yml'
+      - '.github/workflows/push-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-`$`{` github.ref `}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Reuse CI (lint, build+tests, android UI)
+    uses: ./.github/workflows/ci.yml
+'@ -Encoding utf8"
+
+REM Fix formatting on push-ci variables block
+powershell -Command "$content = Get-Content '.github/workflows/push-ci.yml' -Raw; $content = $content -replace 'ci-`\$`\{` github\.ref `\}', 'ci-\${{ github.ref }}'; Set-Content '.github/workflows/push-ci.yml' $content"
+
+REM Update ci.yml to point to the renamed module and E2E test file
+echo [OK] Optimizing .github/workflows/ci.yml...
+powershell -Command "(Get-Content '.github/workflows/ci.yml') -replace ':library-module:', ':!ARTIFACT_NAME!:' -replace 'fib-test.yaml', '!ARTIFACT_NAME!-test.yaml' | Set-Content '.github/workflows/ci.yml'"
+
+REM Migrate package structures and search-and-replace namespaces across all modules
 echo Migrating package structure...
+
+if "!KEEP_EXAMPLE_BOOL!"=="false" (
+    echo [OK] Removing Fibonacci examples and setting up clean standalone sample app...
+    powershell -Command "Set-Content 'sample/composeApp/src/commonMain/kotlin/sample/app/App.kt' @'
+package sample.app
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@Composable
+fun App() {
+  Box(
+    modifier = Modifier.fillMaxSize().background(Color.White),
+    contentAlignment = Alignment.Center
+  ) {
+    Column(
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      BasicText(
+        text = \"Welcome to your new Compose Multiplatform Library!\",
+        style = TextStyle(
+          fontSize = 20.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.Black
+        )
+      )
+      BasicText(
+        text = \"Edit App.kt to build a sample application for your library.\",
+        style = TextStyle(
+          fontSize = 14.sp,
+          color = Color.Gray
+        )
+      )
+    }
+  }
+}
+'@ -Encoding utf8"
+
+    powershell -Command "Set-Content 'sample/composeApp/src/commonTest/kotlin/sample/app/SampleUiTest.kt' @'
+package sample.app
+
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.runComposeUiTest
+import kotlin.test.Test
+
+class SampleUITest {
+
+  @OptIn(ExperimentalTestApi::class)
+  @Test
+  fun sampleUiTest() = runComposeUiTest {
+    setContent { App() }
+    onNodeWithText(\"Welcome to your new Compose Multiplatform Library!\").assertExists()
+  }
+}
+'@ -Encoding utf8"
+
+    powershell -Command "Set-Content 'sample/composeApp/src/commonTest/kotlin/sample/app/SampleIntegrationTest.kt' @'
+package sample.app
+
+import io.github.aryapreetam.parikshan.E2ETestLifecycle
+import io.github.aryapreetam.parikshan.e2eTest
+import kotlin.test.Test
+
+class SampleIntegrationTest : E2ETestLifecycle {
+
+  @Test
+  fun sampleIntegrationTest() = e2eTest {
+    assertVisible(\"Welcome to your new Compose Multiplatform Library!\")
+  }
+}
+'@ -Encoding utf8"
+)
 
 powershell -Command ^
     "$packagePath = '!PACKAGE_PATH!';" ^
     "$samplePackagePath = '!GROUP_ID!.!PACKAGE_NAME!.sample'.Replace('.', '/');" ^
     "$androidPackagePath = '!GROUP_ID!.!PACKAGE_NAME!.android'.Replace('.', '/');" ^
-    "if (Test-Path 'lib/src/commonMain/kotlin/fiblib') {" ^
-    "  New-Item -ItemType Directory -Force -Path \"lib/src/commonMain/kotlin/$packagePath\" | Out-Null;" ^
-    "  Move-Item -Path 'lib/src/commonMain/kotlin/fiblib/*' -Destination \"lib/src/commonMain/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
-    "  Remove-Item -Recurse -Force 'lib/src/commonMain/kotlin/fiblib';" ^
+    "if (Test-Path '!ARTIFACT_NAME!/src/commonMain/kotlin/fiblib') {" ^
+    "  New-Item -ItemType Directory -Force -Path \"!ARTIFACT_NAME!/src/commonMain/kotlin/$packagePath\" | Out-Null;" ^
+    "  if ('!KEEP_EXAMPLE_BOOL!' -eq 'true') {" ^
+    "    Move-Item -Path '!ARTIFACT_NAME!/src/commonMain/kotlin/fiblib/*' -Destination \"!ARTIFACT_NAME!/src/commonMain/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
+    "  }" ^
+    "  Remove-Item -Recurse -Force '!ARTIFACT_NAME!/src/commonMain/kotlin/fiblib';" ^
     "}" ^
-    "if (Test-Path 'lib/src/commonTest/kotlin/fiblib') {" ^
-    "  New-Item -ItemType Directory -Force -Path \"lib/src/commonTest/kotlin/$packagePath\" | Out-Null;" ^
-    "  Move-Item -Path 'lib/src/commonTest/kotlin/fiblib/*' -Destination \"lib/src/commonTest/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
-    "  Remove-Item -Recurse -Force 'lib/src/commonTest/kotlin/fiblib';" ^
+    "if (Test-Path '!ARTIFACT_NAME!/src/commonTest/kotlin/fiblib') {" ^
+    "  New-Item -ItemType Directory -Force -Path \"!ARTIFACT_NAME!/src/commonTest/kotlin/$packagePath\" | Out-Null;" ^
+    "  if ('!KEEP_EXAMPLE_BOOL!' -eq 'true') {" ^
+    "    Move-Item -Path '!ARTIFACT_NAME!/src/commonTest/kotlin/fiblib/*' -Destination \"!ARTIFACT_NAME!/src/commonTest/kotlin/$packagePath\" -ErrorAction SilentlyContinue;" ^
+    "  }" ^
+    "  Remove-Item -Recurse -Force '!ARTIFACT_NAME!/src/commonTest/kotlin/fiblib';" ^
     "}" ^
     "$sources = @('commonMain', 'commonTest', 'iosMain', 'jvmMain', 'wasmJsMain');" ^
     "foreach ($src in $sources) {" ^
@@ -249,7 +411,7 @@ powershell -Command ^
 
 echo Performing search-and-replace for package names & namespaces...
 powershell -Command ^
-    "Get-ChildItem -Path lib, sample -Recurse -Include *.kt, *.gradle.kts, *.xml | ForEach-Object {" ^
+    "Get-ChildItem -Path !ARTIFACT_NAME!, sample -Recurse -Include *.kt, *.gradle.kts, *.xml | ForEach-Object {" ^
     "  $content = Get-Content $_.FullName -Raw;" ^
     "  $content = $content -replace 'package fiblib', 'package !GROUP_ID!.!PACKAGE_NAME!';" ^
     "  $content = $content -replace 'import fiblib\.', 'import !GROUP_ID!.!PACKAGE_NAME!.';" ^
@@ -262,6 +424,17 @@ powershell -Command ^
     "  $content = $content -replace 'applicationId = \"sample\.app\"', 'applicationId = \"!GROUP_ID!.!PACKAGE_NAME!.sample\"';" ^
     "  Set-Content $_.FullName $content;" ^
     "}"
+
+REM Update BCV baseline
+echo [OK] Updating BCV baseline...
+if exist "!ARTIFACT_NAME!\api\jvm\library-module.api" (
+  move "!ARTIFACT_NAME!\api\jvm\library-module.api" "!ARTIFACT_NAME!\api\jvm\!ARTIFACT_NAME!.api"
+)
+if exist "maestro-e2e" rmdir /s /q "maestro-e2e"
+
+REM Global search-and-replace in MD files
+powershell -Command "(Get-Content 'README.MD') -replace ':library-module:', ':!ARTIFACT_NAME!:' -replace 'library-module/', '!ARTIFACT_NAME!/' | Set-Content 'README.MD'"
+powershell -Command "(Get-Content 'CONTRIBUTING.md') -replace ':library-module:', ':!ARTIFACT_NAME!:' -replace 'library-module/', '!ARTIFACT_NAME!/' | Set-Content 'CONTRIBUTING.md'"
 
 REM Create README in new package directory
 (
@@ -276,13 +449,13 @@ echo.
 echo ## Package Structure
 echo.
 echo ```
-echo lib/src/
+echo !ARTIFACT_NAME!/src/
 echo ├── commonMain/kotlin/
 echo │   └── !PACKAGE_PATH!/          # Your library code ^(THIS DIRECTORY^)
 echo └── commonTest/kotlin/
 echo     └── !PACKAGE_PATH!/          # Your tests
 echo ```
-) > "lib\src\commonMain\kotlin\!PACKAGE_PATH!\README.md"
+) > "!ARTIFACT_NAME!\src\commonMain\kotlin\!PACKAGE_PATH!\README.md"
 
 echo [OK] Created package structure with README
 
@@ -294,7 +467,7 @@ echo.
 echo What's next?
 echo.
 echo 1. Your new library package is ready at:
-echo    lib/src/commonMain/kotlin/!PACKAGE_PATH!/
+echo    !ARTIFACT_NAME!/src/commonMain/kotlin/!PACKAGE_PATH!/
 echo.
 echo 2. Your sample compose app package is ready at:
 echo    sample/composeApp/src/commonMain/kotlin/!GROUP_ID!.!PACKAGE_NAME!.sample (slash separated)

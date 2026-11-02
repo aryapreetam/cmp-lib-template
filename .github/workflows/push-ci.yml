@@ -8,7 +8,7 @@ on:
       - 'v*'
     paths:
       # Run CI only when these files/directories change
-      - 'lib/**'
+      - 'library-module/**'
       - 'sample/**'
       - 'gradle/**'
       - 'gradle.properties'
@@ -16,11 +16,10 @@ on:
       - 'build.gradle.kts'
       - '.github/workflows/ci.yml'
       - '.github/workflows/push-ci.yml'
-      - 'maestro-e2e/**'
   pull_request:
     paths:
       # Same path filters for PRs
-      - 'lib/**'
+      - 'library-module/**'
       - 'sample/**'
       - 'gradle/**'
       - 'gradle.properties'
@@ -28,7 +27,6 @@ on:
       - 'build.gradle.kts'
       - '.github/workflows/ci.yml'
       - '.github/workflows/push-ci.yml'
-      - 'maestro-e2e/**'
 
 permissions:
   contents: read
@@ -40,7 +38,7 @@ concurrency:
 jobs:
   check-template-setup:
     name: Check if template is configured
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       is_configured: ${{ steps.check.outputs.is_configured }}
     steps:

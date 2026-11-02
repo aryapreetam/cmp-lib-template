@@ -10,6 +10,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.compose)
   alias(libs.plugins.android.library)
+  id("io.github.aryapreetam.parikshan") version "0.0.11"
 }
 
 kotlin {
@@ -41,7 +42,7 @@ kotlin {
       implementation(libs.compose.runtime)
       implementation(libs.compose.ui)
       implementation(libs.compose.foundation)
-      implementation(project(":lib"))
+      implementation(project(":library-module"))
     }
 
     commonTest.dependencies {
@@ -63,7 +64,7 @@ compose.desktop {
 
     nativeDistributions {
       targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-      packageName = "sample"
+      packageName = findProperty("libArtifactId")?.toString()?.let { "sample-$it" } ?: "sample"
       packageVersion = "1.0.0"
     }
   }
