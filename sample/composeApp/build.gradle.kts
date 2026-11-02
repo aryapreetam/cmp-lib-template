@@ -19,7 +19,7 @@ kotlin {
   androidLibrary {
     namespace = "sample.app"
     compileSdk = 35
-    minSdk = 23
+    minSdk = 24
   }
   jvm()
   wasmJs {
