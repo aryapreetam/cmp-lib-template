@@ -236,6 +236,10 @@ sed -i.bak "s|$OLD_GROUP|$GROUP_ID|g" README.MD
 echo -e "${GREEN}✓${NC} Removing template setup warning from README.MD..."
 sed -i.bak '/<!-- ⚠️ TEMPLATE SETUP WARNING/,/<!-- END TEMPLATE SETUP WARNING -->/d' README.MD
 
+# Remove template acknowledgments section from README.MD
+echo -e "${GREEN}✓${NC} Removing template acknowledgments from README.MD..."
+sed -i.bak '/<!-- TEMPLATE ACKNOWLEDGMENTS -->/,/<!-- END TEMPLATE ACKNOWLEDGMENTS -->/d' README.MD
+
 rm -f README.MD.bak
 
 # Replace in LICENSE

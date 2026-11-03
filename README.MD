@@ -105,14 +105,13 @@ adb install sample-app-android-unsigned.apk
 
 #### 🍎 macOS
 - Download the DMG for your Mac architecture (Intel or Apple Silicon)
-- Open (mount) the DMG and drag the app to your Applications folder (or Desktop)
-- **When you try to open the app for the first time, macOS Gatekeeper will block it since it is an open-source build signed ad-hoc (not using a paid Apple Developer account). Follow these 6 sequential steps to allow running the app:**
+- **When you open the app for the first time, macOS Gatekeeper may block it since it is an open-source build signed ad-hoc. Follow these 6 sequential steps to install and run the app:**
 
   <table width="100%">
     <tr>
-      <td align="center" valign="top"><strong>1. Block Alert Dialog</strong><br/><br/><img src="readme_images/mac_app_run1.png" alt="mac_app_run1" width="220"/></td>
-      <td align="center" valign="top"><strong>2. Open System Settings</strong><br/><br/><img src="readme_images/mac_app_run2.png" alt="mac_app_run2" width="220"/></td>
-      <td align="center" valign="top"><strong>3. Privacy & Security Section</strong><br/><br/><img src="readme_images/mac_app_run3.png" alt="mac_app_run3" width="220"/></td>
+      <td align="center" valign="top"><strong>1. Mount DMG & Install</strong><br/><br/><img src="readme_images/mac_app_run1.png" alt="mac_app_run1" width="220"/></td>
+      <td align="center" valign="top"><strong>2. Gatekeeper Block Alert</strong><br/><br/><img src="readme_images/mac_app_run2.png" alt="mac_app_run2" width="220"/></td>
+      <td align="center" valign="top"><strong>3. Open System Settings</strong><br/><br/><img src="readme_images/mac_app_run3.png" alt="mac_app_run3" width="220"/></td>
     </tr>
     <tr>
       <td align="center" valign="top"><strong>4. Click "Open Anyway"</strong><br/><br/><img src="readme_images/mac_app_run4.png" alt="mac_app_run4" width="220"/></td>
@@ -121,12 +120,13 @@ adb install sample-app-android-unsigned.apk
     </tr>
   </table>
 
-- To allow running the app:
-     1. Double-click the app. If blocked, open macOS **System Settings** (or System Preferences).
-     2. Navigate to **Privacy & Security** and scroll down to the **Security** section.
-     3. You will see a notice stating: *"sample was blocked from use because it is not from an identified developer"*.
-     4. Click **"Open Anyway"** and authenticate with your user password or Touch ID.
-     5. Re-open the app and click **"Open"** on the confirmation dialog. The app will now launch safely!
+- Step-by-step instructions:
+     1. Open (mount) the DMG and drag the app into your **Applications** folder (or Desktop).
+     2. Double-click the app. When blocked by Gatekeeper, click **"Done"** (do not click "Move to Bin").
+     3. Open macOS **System Settings** → **Privacy & Security** and scroll down to the **Security** section.
+     4. You will see a notice stating *"sample was blocked from use..."* — click **"Open Anyway"**.
+     5. Authenticate using Touch ID or your macOS user password.
+     6. Click **"Open"** on the confirmation dialog. The app will now launch safely!
 
 > This is a normal security step for all open-source and CI-generated Mac executables. Apps are signed ad-hoc for internal/dev use, not with a public Apple developer ID.
 
@@ -213,6 +213,7 @@ We provide a detailed step-by-step guide:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
+<!-- TEMPLATE ACKNOWLEDGMENTS -->
 ---
 
 ## 🙏 Acknowledgments
@@ -221,7 +222,7 @@ This template was built with inspiration and learnings from the Kotlin Multiplat
 - [Kotlin Multiplatform Web Wizard](https://terrakok.github.io/kmp-web-wizard/) by [terrakok](https://github.com/terrakok)
 - [Reorderable](https://github.com/Calvin-LL/Reorderable) by Calvin-LL
 - [compose-multiplatform-library-template](https://github.com/KevinnZou/compose-multiplatform-library-template) by KevinnZou
-- [compose-multiplatform-library-template](https://github.com/meticha/compose-multiplatform-library-template) by meticha
+<!-- END TEMPLATE ACKNOWLEDGMENTS -->
 
 ---
 

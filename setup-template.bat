@@ -217,6 +217,10 @@ REM Remove the template setup warning section from README.MD
 echo [OK] Removing template setup warning from README.MD...
 powershell -Command "$content = Get-Content 'README.MD' -Raw; $content = $content -replace '(?s)<!-- ⚠️ TEMPLATE SETUP WARNING.*?<!-- END TEMPLATE SETUP WARNING -->', ''; Set-Content 'README.MD' $content"
 
+REM Remove template acknowledgments section from README.MD
+echo [OK] Removing template acknowledgments from README.MD...
+powershell -Command "$content = Get-Content 'README.MD' -Raw; $content = $content -replace '(?s)<!-- TEMPLATE ACKNOWLEDGMENTS -->.*?<!-- END TEMPLATE ACKNOWLEDGMENTS -->', ''; Set-Content 'README.MD' $content"
+
 REM Replace in LICENSE
 echo [OK] Updating LICENSE...
 powershell -Command "(Get-Content 'LICENSE') -replace 'Copyright \(c\) 2025 %OLD_ORG%', 'Copyright (c) 2025 !GITHUB_ORG!' | Set-Content 'LICENSE'"
